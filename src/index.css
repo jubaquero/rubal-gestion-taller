@@ -1,111 +1,234 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Paleta de colores "Light Mode" refinada */
+  --bg-principal: #f8fafc;     /* Fondo general gris ultra claro (descansa la vista) */
+  --bg-tarjetas: #ffffff;      /* Tarjetas blanco puro para que resalten */
+  --bg-hover: #f1f5f9;         /* Gris claro sutil cuando pasás el mouse */
+  --gris-texto: #0f172a;       /* Gris casi negro para títulos muy legibles */
+  --gris-mutado: #64748b;      /* Gris pizarra medio para las descripciones */
+  --color-borde: #e2e8f0;      /* Bordes finos y limpios */
+  --blanco-brillante: #ffffff;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* ¡EL ROJO EN DETALLES CLAVE! */
+  --rojo-rubal: #dc2626;       /* El rojo de la marca para romper el blanco */
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+  /* Variables exclusivas para la barra superior */
+  --bg-header-blanco: #ffffff; 
+  --texto-header-oscuro: #0f172a; 
 }
 
 body {
   margin: 0;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background-color: var(--bg-principal);
+  color: var(--gris-texto);
+  -webkit-font-smoothing: antialiased;
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+.app-container {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ====================================================================
+   BARRA SUPERIOR (HEADER) - CON LA LÍNEA ROJA DIVISORIA
+   ==================================================================== */
+.app-header {
+  background-color: var(--bg-header-blanco);
+  padding: 12px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* CAMBIO ACÁ: Línea divisoria con el rojo vivo del logo de Rubal */
+  border-bottom: 3px solid var(--rojo-rubal); 
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04); /* Sombra leve para dar profundidad */
+}
+
+.header-logo {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 52px;
+  object-fit: contain;
+}
+
+/* Estilo para el título de la barra superior */
+.header-titulo {
+  color: var(--texto-header-oscuro);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-left: 15px;
+  letter-spacing: -0.3px;
+}
+
+/* Contenedor de botones de navegación */
+.nav-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Botones modernos */
+.btn-nav {
+  background-color: #f1f5f9;
+  color: var(--texto-header-oscuro);
+  border: 1px solid var(--color-borde);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Al pasar el mouse por encima, el botón también reacciona en rojo */
+.btn-nav:hover {
+  background-color: var(--rojo-rubal);
+  color: #ffffff;
+  border-color: var(--rojo-rubal);
+}
+
+.btn-inicio {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.btn-inicio:hover {
+  background-color: #f1f5f9;
+  color: var(--texto-header-oscuro);
+  border-color: var(--color-borde);
+}
+
+/* Mantener compatibilidad si quedó alguna etiqueta vieja */
+.btn-volver {
+  background-color: #f1f5f9;
+  color: var(--texto-header-oscuro);
+  border: 1px solid var(--color-borde);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-volver:hover {
+  background-color: var(--rojo-rubal);
+  color: #ffffff;
+  border-color: var(--rojo-rubal);
+}
+
+/* ====================================================================
+   CONTENIDO PRINCIPAL Y CUADRÍCULA DE TARJETAS
+   ==================================================================== */
+.app-main {
+  flex: 1;
+  padding: 50px 20px;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
   box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+/* Rejilla del menú elegante */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+/* Tarjetas claras con bordes limpios */
+.menu-card {
+  background-color: var(--bg-tarjetas);
+  border: 1px solid var(--color-borde);
+  border-radius: 16px;
+  padding: 35px 25px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+
+/* Efecto al pasar el mouse por las tarjetas */
+.menu-card:hover {
+  transform: translateY(-4px);
+  background-color: var(--bg-hover);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
-p {
+
+/* Contenedor del ícono emoji de la tarjeta */
+.card-icon {
+  font-size: 32px;
+  margin-bottom: 20px;
+  background: #f1f5f9;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--color-borde);
+}
+
+.menu-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--gris-texto);
+  letter-spacing: -0.2px;
+}
+
+.menu-card p {
+  color: var(--gris-mutado);
+  font-size: 14px;
   margin: 0;
+  line-height: 1.5;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+/* ====================================================================
+   CONTENEDOR INTERNO DE LOS MÓDULOS
+   ==================================================================== */
+.seccion-contenedor {
+  background-color: var(--bg-tarjetas);
+  border-radius: 16px;
+  padding: 40px;
+  border: 1px solid var(--color-borde);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+.seccion-contenedor h2 {
+  margin-top: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gris-texto);
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+/* Alerta de Sección en Construcción */
+.en-construccion {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.constructor-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 20px;
+  opacity: 0.9;
+}
+
+.en-construccion p {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gris-texto);
+  margin: 0 0 8px 0;
+}
+
+.en-construccion .subtext {
+  color: var(--gris-mutado);
+  font-size: 14px;
 }

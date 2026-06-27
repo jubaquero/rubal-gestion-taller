@@ -1,122 +1,191 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState } from 'react';
+import './App.css';
+import logoRubal from './assets/logo_rubal.png';
+import Clientes from './components/Clientes';
+import Marcas from './components/Marcas';
+import Categorias from './components/Categorias';
+import Aumentos from './components/Aumentos';
+import Productos from './components/Productos';
+import Almacenes from './components/Almacenes';
+import Movimientos from './components/Movimientos';
+import Trabajos from './components/Trabajos';
+import Presupuestos from './components/Presupuestos';
+import Dashboard_Presupuestos from './components/Dashboard_Presupuestos';
+import Dashboard_EstadoTaller from './components/Dashboard_EstadoTaller';
+import Recibos from './components/Recibos';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Historial guarda las secciones visitadas
+  const [historial, setHistorial] = useState([]);
+
+  // =========================================================
+  // 1. MENÚ PRINCIPAL (NIVEL 0)
+  // =========================================================
+  const menuPrincipal = [
+    { id: 'configuracion', titulo: 'Configuración', icon: '⚙️', desc: 'Ajustes del sistema y tablas base.' },
+    { id: 'stock', titulo: 'Stock', icon: '📦', desc: 'Administración de repuestos e insumos.' },
+    { id: 'presupuestos', titulo: 'Presupuestos', icon: '📋', desc: 'Crear, editar y enviar presupuestos.' },
+    { id: 'pagos', titulo: 'Pagos', icon: '💳', desc: 'Registro de cobros, señas y saldos.' },
+    { id: 'trabajos', titulo: 'Trabajos', icon: '🛠️', desc: 'Control de motores, estados y fecha fin.' },
+  ];
+
+  // =========================================================
+  // 2. SUBMENÚS DINÁMICOS (NIVEL 1)
+  // =========================================================
+  const subMenus = {
+    configuracion: [
+      { id: 'configuracion_clientes', titulo: 'Clientes', icon: '👤', desc: 'Administración, alta y búsqueda de clientes.' },
+      { id: 'configuracion_aumentos', titulo: 'Aumentos', icon: '📈', desc: 'Aplicar porcentajes masivos a la mano de obra.' },
+      { id: 'configuracion_marcas', titulo: 'Marcas', icon: '🏷️', desc: 'Gestión y alta de marcas de motores/vehículos.' },
+      { id: 'configuracion_categorias', titulo: 'Categorías', icon: '🗂️', desc: 'Categorías de productos y repuestos.' },
+    ],
+    stock: [
+      { id: 'stock_productos', titulo: 'Productos', icon: '🧰', desc: 'Catálogo, stock actual y ficha de movimientos.' },
+      { id: 'stock_almacenes', titulo: 'Almacenes', icon: '🏢', desc: 'Gestión de estanterías y ubicaciones físicas.' },
+      { id: 'stock_movimientos', titulo: 'Movimientos', icon: '🔄', desc: 'Registro de ingresos y egresos de Productos.' }
+    ],
+    presupuestos: [
+      { id: 'presupuestos_gestion', titulo: 'Gestión', icon: '📝', desc: 'Crear, editar, aprobar o rechazar presupuestos.' },
+      { id: 'presupuestos_dashboard', titulo: 'Dashboard', icon: '📊', desc: 'Métricas de presupuestos y estados.' }
+    ],
+    pagos: [
+      { id: 'pagos_recibos', titulo: 'Recibos', icon: '💲', desc: 'Cobros de clientes y saldos pendientes.' },
+      { id: 'pagos_comisiones', titulo: 'Comisiones', icon: '🤝', desc: 'Pago a mecánicos.' },
+      { id: 'pagos_reportes', titulo: 'Reportes', icon: '📉', desc: 'Listado de deudores y salidas de dinero.' }
+    ],
+    trabajos: [
+      { id: 'trabajos_gestion', titulo: 'Gestión de Trabajos', icon: '🔧', desc: 'Órdenes de trabajos, estados y fechas.' },
+      { id: 'trabajos_dashboard', titulo: 'Estado del Taller', icon: '🚥', desc: 'Monitoreo de trabajos iniciados y finalizados.' }
+    ]
+  };
+
+  // Identificamos la sección activa
+  const seccionActiva = historial.length > 0 ? historial[historial.length - 1] : null;
+
+  // Funciones de navegación
+  const irASeccion = (idSeccion) => setHistorial([...historial, idSeccion]);
+  const volverAtras = () => {
+    const nuevoHistorial = [...historial];
+    nuevoHistorial.pop();
+    setHistorial(nuevoHistorial);
+  };
+  const irAlInicio = () => setHistorial([]);
+
+  // =========================================================
+  // 3. BÚSQUEDA DE TÍTULO PARA EL HEADER
+  // =========================================================
+  let tarjetaActual = menuPrincipal.find(t => t.id === seccionActiva);
+  if (!tarjetaActual) {
+    // Si no está en el menú principal, lo buscamos en los submenús
+    for (const key in subMenus) {
+      const encontrada = subMenus[key].find(t => t.id === seccionActiva);
+      if (encontrada) {
+        tarjetaActual = encontrada;
+        break;
+      }
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app-container">
+      {/* HEADER */}
+      <header className="app-header">
+        <div className="header-logo" onClick={irAlInicio} title="Ir al Inicio">
+          <img src={logoRubal} alt="Rubal Rectificaciones" className="logo-img" />
+          <h1 className="header-titulo">Sistema Rubal Rectificaciones</h1>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+        {historial.length > 0 && (
+          <div className="nav-actions">
+            {historial.length > 1 && (
+              <button className="btn-nav btn-inicio" onClick={irAlInicio}>🏠 Inicio</button>
+            )}
+            <button className="btn-nav btn-volver" onClick={volverAtras}>← Volver</button>
+          </div>
+        )}
+      </header>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {/* CONTENIDO PRINCIPAL */}
+      <main className="app-main">
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {/* NIVEL 0: MENÚ PRINCIPAL */}
+        {seccionActiva === null && (
+          <div className="menu-grid">
+            {menuPrincipal.map((tarjeta) => (
+              <div key={tarjeta.id} className="menu-card" onClick={() => irASeccion(tarjeta.id)}>
+                <div className="card-icon">{tarjeta.icon}</div>
+                <h3>{tarjeta.titulo}</h3>
+                <p>{tarjeta.desc}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* NIVEL 1: SUBMENÚS DINÁMICOS */}
+        {/* Si la seccionActiva coincide con alguna clave de subMenus (ej: 'stock'), mostramos su grilla */}
+        {subMenus[seccionActiva] && (
+          <div className="seccion-contenedor">
+            <h2>Módulo: {tarjetaActual?.titulo}</h2>
+            <div className="menu-grid" style={{ marginTop: '25px' }}>
+              {subMenus[seccionActiva].map((subTarjeta) => (
+                <div key={subTarjeta.id} className="menu-card" onClick={() => irASeccion(subTarjeta.id)}>
+                  <div className="card-icon">{subTarjeta.icon}</div>
+                  <h3>{subTarjeta.titulo}</h3>
+                  <p>{subTarjeta.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+
+        {/* NIVEL 2: COMPONENTES FINALES */}
+        {seccionActiva !== null && !subMenus[seccionActiva] && (
+          <div className="seccion-contenedor">
+
+            {/* Título dinámico con icono forzado si es Marcas */}
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {/* Renderizamos el icono directamente si existe en la tarjeta */}
+              {tarjetaActual?.icon && <span>{tarjetaActual.icon}</span>}
+              {tarjetaActual?.titulo || 'Sección Interna'}
+            </h2>
+
+            {seccionActiva === 'configuracion_clientes' ? (
+              <Clientes />
+            ) : seccionActiva === 'configuracion_marcas' ? (
+              <Marcas />
+            ) : seccionActiva === 'configuracion_categorias' ? (
+              <Categorias />
+            ) : seccionActiva === 'configuracion_aumentos' ? (
+              <Aumentos />
+            ) : seccionActiva === 'stock_productos' ? (
+              <Productos />
+            ) : seccionActiva === 'stock_almacenes' ? (
+              <Almacenes />
+            ) : seccionActiva === 'stock_movimientos' ? (
+              <Movimientos />
+            ) : seccionActiva === 'trabajos_gestion' ? (
+              <Trabajos />
+            ) : seccionActiva === 'presupuestos_gestion' ? (
+              <Presupuestos />
+            ) : seccionActiva === 'presupuestos_dashboard' ? (
+              <Dashboard_Presupuestos />
+            ) : seccionActiva === 'trabajos_dashboard' ? (
+              <Dashboard_EstadoTaller />
+            ) : seccionActiva === 'pagos_recibos' ? (
+              <Recibos />
+            ) : (
+              <div className="en-construccion">
+                <span className="constructor-icon">🛠️</span>
+                <p>Esta sección se encuentra en construcción.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
