@@ -17,6 +17,7 @@ import Comisiones from './components/Comisiones';
 import Reporte_Saldos from './components/Reporte_Saldos';
 import Argon from './components/Argon';
 import Caja from './components/Caja';
+import Dashboard_Gastos from './components/Dashboard_Gastos';
 
 function App() {
   // Historial guarda las secciones visitadas
@@ -29,9 +30,9 @@ function App() {
     { id: 'configuracion', titulo: 'Configuración', icon: '⚙️', desc: 'Ajustes del sistema y tablas base.' },
     { id: 'stock', titulo: 'Stock', icon: '📦', desc: 'Administración de repuestos e insumos.' },
     { id: 'presupuestos', titulo: 'Presupuestos', icon: '📋', desc: 'Crear, editar y enviar presupuestos.' },
-        { id: 'trabajos', titulo: 'Trabajos', icon: '🛠️', desc: 'Control de motores, estados y fecha fin.' },
+    { id: 'trabajos', titulo: 'Trabajos', icon: '🛠️', desc: 'Control de motores, estados y fecha fin.' },
     { id: 'pagos', titulo: 'Pagos', icon: '💳', desc: 'Registro de cobros, señas y saldos.' },
-{ id: 'caja', titulo: 'Caja', icon: '💵', desc: 'Registro de ingreso y salida de dinero.' }
+    { id: 'caja', titulo: 'Caja', icon: '💵', desc: 'Registro de ingreso y salida de dinero.' }
 
   ];
 
@@ -49,7 +50,7 @@ function App() {
       { id: 'stock_productos', titulo: 'Productos', icon: '🧰', desc: 'Catálogo, stock actual y ficha de movimientos.' },
       { id: 'stock_almacenes', titulo: 'Almacenes', icon: '🏢', desc: 'Gestión de estanterías y ubicaciones físicas.' },
       { id: 'stock_movimientos', titulo: 'Movimientos', icon: '🔄', desc: 'Registro de ingresos y egresos de Productos.' },
-      { id: 'stock_argon', titulo: 'Argon', icon: '👨‍🏭', desc: 'Registro de recargar del tubo de Argón.' }
+      { id: 'stock_argon', titulo: 'Argon', icon: '👨‍🏭', desc: 'Registro de recargas del tubo de Argón.' }
     ],
     presupuestos: [
       { id: 'presupuestos_gestion', titulo: 'Gestión', icon: '📝', desc: 'Crear, editar, aprobar o rechazar presupuestos.' },
@@ -67,7 +68,7 @@ function App() {
     ,
     caja: [
       { id: 'caja_gestion', titulo: 'Gestión de Caja', icon: '💸', desc: 'Ingresos y Salidas de dinero.' },
-      { id: 'caja_dashboard', titulo: 'Estado de Caja', icon: '📈', desc: 'Monitoreo de entradas y salidas de dinero.' }
+      { id: 'caja_dashboard_gastos', titulo: 'Estado de Gastos', icon: '📈', desc: 'Monitoreo de salidas de dinero.' }
     ]
   };
 
@@ -157,7 +158,6 @@ function App() {
 
             {/* Título dinámico con icono forzado si es Marcas */}
             <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {/* Renderizamos el icono directamente si existe en la tarjeta */}
               {tarjetaActual?.icon && <span>{tarjetaActual.icon}</span>}
               {tarjetaActual?.titulo || 'Sección Interna'}
             </h2>
@@ -194,6 +194,8 @@ function App() {
               <Reporte_Saldos />
             ) : seccionActiva === 'caja_gestion' ? (
               <Caja />
+            ) : seccionActiva === 'caja_dashboard_gastos' ? (
+              <Dashboard_Gastos />
             ) : (
               <div className="en-construccion">
                 <span className="constructor-icon">🛠️</span>

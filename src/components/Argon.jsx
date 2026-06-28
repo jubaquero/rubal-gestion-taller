@@ -76,33 +76,44 @@ function Argon() {
         setCargando(false);
     };
 
-    const handleGuardar = async () => {
-        if (!formData.fecha) return alert("⚠️ Ingrese al menos la fecha de recarga.");
-        const dataToSave = { ...formData, costo: formData.costo ? Number(formData.costo) : 0 };
-        
-        if (dataToSave.id === null) {
-            delete dataToSave.id; 
-        }
+const handleGuardar = async () => {
+    if (!formData.fecha) return alert("⚠️ Ingrese al menos la fecha de recarga.");
+    
+    // 1. Creamos una copia para no modificar el estado original directamente
+    const dataToSave = { ...formData, costo: formData.costo ? Number(formData.costo) : 0 };
+    
+    // 2. ELIMINAMOS el ID del objeto que vamos a enviar a la base de datos
+    // Esto es vital porque la DB no permite actualizar una columna IDENTITY
+    delete dataToSave.id; 
 
-        if (formData.id) {
-            const { error } = await supabase.from('bd_recargas_argon').update(dataToSave).eq('id', formData.id);
-            if (error) {
-                console.error(error);
-                alert("Error al actualizar: " + error.message);
-                return;
-            }
-        } else {
-            const { error } = await supabase.from('bd_recargas_argon').insert([dataToSave]);
-            if (error) {
-                console.error(error);
-                alert("Error al guardar: " + error.message);
-                return;
-            }
+    if (formData.id) {
+        // ACTUALIZACIÓN
+        const { error } = await supabase
+            .from('bd_recargas_argon')
+            .update(dataToSave) // Acá dataToSave ya no tiene el ID
+            .eq('id', formData.id); // Usamos el ID original solo para el filtro
+            
+        if (error) {
+            console.error("Error al actualizar:", error);
+            alert("Error al actualizar: " + error.message);
+            return;
         }
-        
-        setVista('listado');
-        cargarDatos();
-    };
+    } else {
+        // CREACIÓN
+        const { error } = await supabase
+            .from('bd_recargas_argon')
+            .insert([dataToSave]);
+            
+        if (error) {
+            console.error("Error al guardar:", error);
+            alert("Error al guardar: " + error.message);
+            return;
+        }
+    }
+    
+    setVista('listado');
+    cargarDatos();
+};
 
     // --- LÓGICA DE KPIs CORREGIDA Y PRECISA ---
     
@@ -269,11 +280,11 @@ function Argon() {
                             </div>
                             <div>
                                 <label style={s.label}>Proveedor (Opcional)</label>
-                                <input type="text" style={s.input} value={formData.proveedor || ''} onChange={e => setFormData({...formData, proveedor: e.target.value})} placeholder="Nombre de quien recargó" />
+                                <input type="text" style={s.input} value={formData.proveedor || ''} onChange={e => setFormData({...formData, proveedor: e.target.value})}  />
                             </div>
                             <div style={{ gridColumn: 'span 2' }}>
                                 <label style={s.label}>Nota / Observación</label>
-                                <textarea style={{ ...s.input, height: '60px' }} value={formData.nota || ''} onChange={e => setFormData({...formData, nota: e.target.value})} placeholder="Presión del tubo, cambio de válvula, etc..." />
+                                <textarea style={{ ...s.input, height: '60px' }} value={formData.nota || ''} onChange={e => setFormData({...formData, nota: e.target.value})}  />
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: '15px' }}>

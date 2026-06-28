@@ -44,6 +44,15 @@ function Caja() {
     const [mesFiltro, setMesFiltro] = useState('TODOS');
     const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
+    const [listaClientes, setListaClientes] = useState([]);
+
+    // En tu función de carga inicial:
+const cargarClientes = async () => {
+    // Agregamos 'apellido' a la consulta
+    const { data } = await supabase.from('bd_clientes').select('id, nombre, apellido').order('nombre');
+    setListaClientes(data || []);
+};
+
     const s = {
         card: { background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' },
         input: { padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', width: '100%', boxSizing: 'border-box', outline: 'none' },
@@ -65,7 +74,10 @@ function Caja() {
         }).format(Number(valor || 0));
     };
 
-    useEffect(() => { cargarDatos(); }, []);
+    useEffect(() => {
+        cargarDatos();
+        cargarClientes();
+    }, []);
 
     const cargarDatos = async () => {
         setCargando(true);
@@ -78,33 +90,79 @@ function Caja() {
         setCargando(false);
     };
 
-    const handleGuardarIngreso = async () => {
-        if (!formIngreso.fecha || !formIngreso.importe) return alert("⚠️ Fecha e Importe son obligatorios.");
-        const dataToSave = { ...formIngreso, importe: Number(formIngreso.importe) };
-        if (dataToSave.id === null) delete dataToSave.id;
+const handleGuardarIngreso = async () => {
+    if (!formIngreso.fecha || !formIngreso.importe) return alert("⚠️ Fecha e Importe son obligatorios.");
 
+    // 1. Limpiamos el objeto: convertimos números y nos aseguramos que ID no vaya
+    const dataToSave = { 
+        ...formIngreso, 
+        importe: Number(formIngreso.importe),
+        id_cliente: formIngreso.id_cliente ? Number(formIngreso.id_cliente) : null
+    };
+    
+    // Eliminamos el ID del objeto para que Supabase no intente actualizarlo
+    delete dataToSave.id;
+
+    try {
         if (formIngreso.id) {
-            await supabase.from('bd_caja_ingresos').update(dataToSave).eq('id', formIngreso.id);
+            // ACTUALIZACIÓN
+            const { error } = await supabase
+                .from('bd_caja_ingresos')
+                .update(dataToSave)
+                .eq('id', formIngreso.id); // El ID se usa solo para el filtro .eq()
+
+            if (error) throw error;
         } else {
-            await supabase.from('bd_caja_ingresos').insert([dataToSave]);
+            // CREACIÓN
+            const { error } = await supabase
+                .from('bd_caja_ingresos')
+                .insert([dataToSave]);
+
+            if (error) throw error;
         }
+        
         setVista('listado');
         cargarDatos();
-    };
+    } catch (err) {
+        console.error("Error detallado:", err);
+        alert("Error al guardar: " + err.message);
+    }
+};
 
-    const handleGuardarGasto = async () => {
-        if (!formGasto.fecha || !formGasto.importe) return alert("⚠️ Fecha e Importe son obligatorios.");
-        const dataToSave = { ...formGasto, importe: Number(formGasto.importe) };
-        if (dataToSave.id === null) delete dataToSave.id;
+const handleGuardarGasto = async () => {
+    if (!formGasto.fecha || !formGasto.importe) return alert("⚠️ Fecha e Importe son obligatorios.");
 
+    // 1. Creamos la copia y limpiamos el objeto
+    const dataToSave = { ...formGasto, importe: Number(formGasto.importe) };
+    
+    // 2. IMPORTANTE: Eliminamos el id para que Supabase no intente actualizarlo
+    delete dataToSave.id;
+
+    try {
         if (formGasto.id) {
-            await supabase.from('bd_caja_gastos').update(dataToSave).eq('id', formGasto.id);
+            // ACTUALIZACIÓN: Pasamos dataToSave (sin id) y filtramos por el id original
+            const { error } = await supabase
+                .from('bd_caja_gastos')
+                .update(dataToSave) 
+                .eq('id', formGasto.id); 
+
+            if (error) throw error;
         } else {
-            await supabase.from('bd_caja_gastos').insert([dataToSave]);
+            // CREACIÓN
+            const { error } = await supabase
+                .from('bd_caja_gastos')
+                .insert([dataToSave]);
+
+            if (error) throw error;
         }
+        
         setVista('listado');
         cargarDatos();
-    };
+    } catch (err) {
+        console.error("Error al guardar gasto:", err);
+        alert("Error al guardar el gasto: " + err.message);
+    }
+};
 
     const filtrarDatos = (lista) => {
         return lista.filter(item => {
@@ -276,27 +334,47 @@ function Caja() {
 
                     // FORMULARIO DE INGRESOS
                     <div>
-                        <h2 style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '10px' }}>{formIngreso.id ? '✏️ Editar Ingreso' : '💰 Registrar Nuevo Ingreso'}</h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '20px', marginTop: '20px' }}>
-                            <div><label style={s.label}>Fecha *</label><input type="date" style={s.input} value={formIngreso.fecha} onChange={e => setFormIngreso({ ...formIngreso, fecha: e.target.value })} /></div>
-                            <div><label style={s.label}>Importe *</label><input type="number" style={s.input} value={formIngreso.importe} onChange={e => setFormIngreso({ ...formIngreso, importe: e.target.value })} /></div>
-                            <div><label style={s.label}>Moneda</label><select style={s.input} value={formIngreso.moneda} onChange={e => setFormIngreso({ ...formIngreso, moneda: e.target.value })}><option>PESO</option><option>DOLAR</option></select></div>
+    <h2 style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '10px' }}>{formIngreso.id ? '✏️ Editar Ingreso' : '💰 Registrar Nuevo Ingreso'}</h2>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '20px', marginTop: '20px' }}>
+        <div><label style={s.label}>Fecha *</label><input type="date" style={s.input} value={formIngreso.fecha} onChange={e => setFormIngreso({ ...formIngreso, fecha: e.target.value })} /></div>
+        <div><label style={s.label}>Importe *</label><input type="number" style={s.input} value={formIngreso.importe} onChange={e => setFormIngreso({ ...formIngreso, importe: e.target.value })} /></div>
+        <div><label style={s.label}>Moneda</label><select style={s.input} value={formIngreso.moneda} onChange={e => setFormIngreso({ ...formIngreso, moneda: e.target.value })}><option>PESO</option><option>DOLAR</option></select></div>
 
-                            <div><label style={s.label}>Cliente</label><input type="text" style={s.input} value={formIngreso.cliente || ''} onChange={e => setFormIngreso({ ...formIngreso, cliente: e.target.value })} /></div>
-                            <div style={{ gridColumn: 'span 2' }}><label style={s.label}>Detalle</label><input type="text" style={s.input} value={formIngreso.detalle || ''} onChange={e => setFormIngreso({ ...formIngreso, detalle: e.target.value })} /></div>
+        <div>
+            <label style={s.label}>Cliente *</label>
+<select
+    style={s.input}
+    value={formIngreso.id_cliente || ''}
+    onChange={e => {
+        const clienteSeleccionado = listaClientes.find(c => c.id == e.target.value);
+        setFormIngreso({
+            ...formIngreso,
+            id_cliente: e.target.value,
+            // Guardamos el nombre y apellido juntos en el campo cliente
+            cliente: clienteSeleccionado ? `${clienteSeleccionado.nombre} ${clienteSeleccionado.apellido}` : ""
+        });
+    }}
+>
+    <option value="">Seleccione un cliente...</option>
+    {listaClientes.map(c => (
+        <option key={c.id} value={c.id}>
+            {c.nombre} {c.apellido}
+        </option>
+    ))}
+</select>
+        </div>
+        
+        <div style={{ gridColumn: 'span 2' }}><label style={s.label}>Detalle</label><input type="text" style={s.input} value={formIngreso.detalle || ''} onChange={e => setFormIngreso({ ...formIngreso, detalle: e.target.value })} /></div>
 
-                            <div>
-                                <label style={s.label}>Categoría</label>
-                                <select
-                                    style={s.input}
-                                    value={formIngreso.categoria || ""}
-                                    onChange={e => setFormIngreso({ ...formIngreso, categoria: e.target.value })}
-                                >
-                                    <option value="Motor">Motor</option>
-                                    <option value="Tapa">Tapa</option>
-                                    <option value="Otro">Otro</option>
-                                </select>
-                            </div>
+        <div>
+            <label style={s.label}>Categoría</label>
+            <select style={s.input} value={formIngreso.categoria || ""} onChange={e => setFormIngreso({ ...formIngreso, categoria: e.target.value })}>
+                <option value="">Seleccionar...</option>
+                <option value="Motor">Motor</option>
+                <option value="Tapa">Tapa</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
                             <div>
                                 <label style={s.label}>Cuenta Destino *</label>
                                 <select
@@ -333,20 +411,43 @@ function Caja() {
                             <div style={{ gridColumn: 'span 2' }}><label style={s.label}>Detalle del gasto</label><input type="text" style={s.input} value={formGasto.detalle || ''} onChange={e => setFormGasto({ ...formGasto, detalle: e.target.value })} placeholder="Ej: Juego de aros..." /></div>
                             <div><label style={s.label}>Destino / Proveedor</label><input type="text" style={s.input} value={formGasto.destino || ''} onChange={e => setFormGasto({ ...formGasto, destino: e.target.value })} placeholder="Ej: Renai, Fibertel..." /></div>
 
+<div>
+            <label style={s.label}>Categoría</label>
+            <select
+                style={s.input}
+                value={formGasto.categoria || ""} // <--- CORREGIDO: formGasto
+                onChange={e => setFormGasto({ ...formGasto, categoria: e.target.value })} // <--- CORREGIDO: setFormGasto
+            >
+                <option value="">Seleccionar...</option>
+                <option value="Servicios">Servicios</option>
+                <option value="Repuestos">Repuestos</option>
+                <option value="Fletes">Fletes</option>
+                <option value="Insumos">Insumos</option>
+                <option value="Alquiler">Alquiler</option>
+                <option value="Sueldos">Sueldos</option>
+                <option value="Herramientas">Herramientas</option>
+                <option value="Otros">Otros</option>
+            </select>
+        </div>
                             <div>
-                                <label style={s.label}>Categoría</label>
+                                <label style={s.label}>Medio de Pago</label>
                                 <select
                                     style={s.input}
-                                    value={formIngreso.categoria || ""}
-                                    onChange={e => setFormIngreso({ ...formIngreso, categoria: e.target.value })}
+                                    value={formGasto.medio_pago || ''}
+                                    onChange={e => setFormGasto({ ...formGasto, medio_pago: e.target.value })}
                                 >
-                                    <option value="Motor">Motor</option>
-                                    <option value="Tapa">Tapa</option>
-                                    <option value="Otro">Otro</option>
+                                    <option value="EFECTIVO">Efectivo</option>
+                                    <option value="CUENTA">Cuenta</option>
+                                    <option value="OTRO">Otro</option>
                                 </select>
                             </div>
-                            <div><label style={s.label}>Medio de Pago</label><input type="text" style={s.input} value={formGasto.medio_pago || ''} onChange={e => setFormGasto({ ...formGasto, medio_pago: e.target.value })} placeholder="Ej: EFECTIVO, CUENTA..." /></div>
-                            <div><label style={s.label}>Tipo de Gasto</label><select style={s.input} value={formGasto.tipo} onChange={e => setFormGasto({ ...formGasto, tipo: e.target.value })}><option>VARIABLE</option><option>FIJO</option></select></div>
+                            <div>
+                                <label style={s.label}>Tipo de Gasto</label>
+                                <select style={s.input} value={formGasto.tipo} onChange={e => setFormGasto({ ...formGasto, tipo: e.target.value })}>
+                                    <option>VARIABLE</option>
+                                    <option>FIJO</option>
+                                </select>
+                            </div>
                         </div>
                         <div style={{ display: 'flex', gap: '15px' }}>
                             <button style={{ ...s.btnOut, flex: 2, padding: '15px' }} onClick={handleGuardarGasto}>💾 Guardar Gasto</button>

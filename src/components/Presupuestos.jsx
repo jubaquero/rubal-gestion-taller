@@ -12,6 +12,7 @@ function Presupuestos() {
     const [vista, setVista] = useState('listado');
     const [busqueda, setBusqueda] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('TODOS');
+    const [filtroAño, setFiltroAño] = useState('TODOS');
     const [cargando, setCargando] = useState(true);
 
     // Cabecera del Presupuesto
@@ -496,12 +497,23 @@ function Presupuestos() {
         cargarDatos();
     };
 
+    // Calculamos dinámicamente los años existentes en la base de datos
+    const añosDisponibles = [...new Set([
+        ...presupuestos.map(p => p.fecha_presupuesto ? new Date(p.fecha_presupuesto).getFullYear().toString() : ''),
+        new Date().getFullYear().toString() // Por las dudas, siempre mostramos el año actual
+    ])].filter(Boolean).sort().reverse();
+
+    // Filtro maestro (Texto, Estado y Año)
     const filtrarPresupuestos = presupuestos.filter(p => {
         const coincideEstado = filtroEstado === 'TODOS' || p.estado === filtroEstado;
+        const añoPresupuesto = p.fecha_presupuesto ? new Date(p.fecha_presupuesto).getFullYear().toString() : '';
+        const coincideAño = filtroAño === 'TODOS' || añoPresupuesto === filtroAño;
+
         const term = busqueda.toLowerCase();
         const strCliente = `${p.bd_clientes?.nombre || ''} ${p.bd_clientes?.apellido || ''}`.toLowerCase();
         const strMotor = (p.bd_nomenclador?.descripcion || '').toLowerCase();
-        return coincideEstado && (strCliente.includes(term) || strMotor.includes(term) || p.id.toString().includes(term));
+
+        return coincideEstado && coincideAño && (strCliente.includes(term) || strMotor.includes(term) || p.id.toString().includes(term));
     });
 
     const tiposMotoresUnicos = [...new Set(nomencladores.map(n => n.tipo))].filter(Boolean);
@@ -583,19 +595,42 @@ function Presupuestos() {
                 {/* --- VISTA LISTADO --- */}
                 {vista === 'listado' && (
                     <>
+                        {/* CABECERA Y BUSCADOR */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h2 style={{ margin: 0 }}>💰 Presupuestos</h2>
-                            <input type="text" style={s.inputModerno} placeholder="🔍 Buscar..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
-                            {/* Buscá este botón en tu listado principal */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <h2 style={{ margin: 0 }}>💰 Presupuestos</h2>
+                                {/* CONTADOR DE RESULTADOS */}
+                                <span style={{ background: '#33619c', color: '#fdfdfd', padding: '4px 10px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                    {filtrarPresupuestos.length} resultados
+                                </span>
+                            </div>
+                            <input type="text" style={s.inputModerno} placeholder="🔍 Buscar cliente, motor o N°..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
                             <button style={s.btnPr} onClick={limpiarFormulario}>
                                 + Nuevo Presupuesto
                             </button>
                         </div>
+                        {/* CONTENEDOR DE FILTROS PILL (AÑO Y ESTADO) */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '20px', background: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
 
-                        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-                            {['TODOS', 'PENDIENTE', 'APROBADO', 'RECHAZADO'].map(op => (
-                                <button key={op} style={s.pill(filtroEstado === op)} onClick={() => setFiltroEstado(op)}>{op}</button>
-                            ))}
+                            {/* Filtros de Año */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>Año:</span>
+                                <button style={s.pill(filtroAño === 'TODOS')} onClick={() => setFiltroAño('TODOS')}>TODOS</button>
+                                {añosDisponibles.map(anio => (
+                                    <button key={anio} style={s.pill(filtroAño === anio)} onClick={() => setFiltroAño(anio)}>{anio}</button>
+                                ))}
+                            </div>
+
+                            {/* Separador visual */}
+                            <div style={{ width: '1px', background: '#cbd5e1' }}></div>
+
+                            {/* Filtros de Estado */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>Estado:</span>
+                                {['TODOS', 'PENDIENTE', 'APROBADO', 'RECHAZADO'].map(op => (
+                                    <button key={op} style={s.pill(filtroEstado === op)} onClick={() => setFiltroEstado(op)}>{op}</button>
+                                ))}
+                            </div>
                         </div>
 
                         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
@@ -615,7 +650,9 @@ function Presupuestos() {
                                         <td style={{ ...s.td, fontWeight: 'bold' }}>#{p.id}</td>
                                         <td style={{ ...s.td, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.bd_clientes?.nombre} {p.bd_clientes?.apellido}</td>
                                         <td style={{ ...s.td, fontWeight: '500', maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.bd_nomenclador?.descripcion}</td>
-                                        <td style={s.td}>{p.fecha_presupuesto}</td>
+                                        <td style={s.td}>
+                                            {p.fecha_presupuesto ? p.fecha_presupuesto.split('-').reverse().join('/') : '-'}
+                                        </td>
                                         <td style={s.td}>
                                             <span style={{
                                                 display: 'block', width: '80px', textAlign: 'center', padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold',
