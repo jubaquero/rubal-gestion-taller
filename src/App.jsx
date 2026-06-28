@@ -13,6 +13,10 @@ import Presupuestos from './components/Presupuestos';
 import Dashboard_Presupuestos from './components/Dashboard_Presupuestos';
 import Dashboard_EstadoTaller from './components/Dashboard_EstadoTaller';
 import Recibos from './components/Recibos';
+import Comisiones from './components/Comisiones';
+import Reporte_Saldos from './components/Reporte_Saldos';
+import Argon from './components/Argon';
+import Caja from './components/Caja';
 
 function App() {
   // Historial guarda las secciones visitadas
@@ -25,8 +29,10 @@ function App() {
     { id: 'configuracion', titulo: 'Configuración', icon: '⚙️', desc: 'Ajustes del sistema y tablas base.' },
     { id: 'stock', titulo: 'Stock', icon: '📦', desc: 'Administración de repuestos e insumos.' },
     { id: 'presupuestos', titulo: 'Presupuestos', icon: '📋', desc: 'Crear, editar y enviar presupuestos.' },
+        { id: 'trabajos', titulo: 'Trabajos', icon: '🛠️', desc: 'Control de motores, estados y fecha fin.' },
     { id: 'pagos', titulo: 'Pagos', icon: '💳', desc: 'Registro de cobros, señas y saldos.' },
-    { id: 'trabajos', titulo: 'Trabajos', icon: '🛠️', desc: 'Control de motores, estados y fecha fin.' },
+{ id: 'caja', titulo: 'Caja', icon: '💵', desc: 'Registro de ingreso y salida de dinero.' }
+
   ];
 
   // =========================================================
@@ -42,7 +48,8 @@ function App() {
     stock: [
       { id: 'stock_productos', titulo: 'Productos', icon: '🧰', desc: 'Catálogo, stock actual y ficha de movimientos.' },
       { id: 'stock_almacenes', titulo: 'Almacenes', icon: '🏢', desc: 'Gestión de estanterías y ubicaciones físicas.' },
-      { id: 'stock_movimientos', titulo: 'Movimientos', icon: '🔄', desc: 'Registro de ingresos y egresos de Productos.' }
+      { id: 'stock_movimientos', titulo: 'Movimientos', icon: '🔄', desc: 'Registro de ingresos y egresos de Productos.' },
+      { id: 'stock_argon', titulo: 'Argon', icon: '👨‍🏭', desc: 'Registro de recargar del tubo de Argón.' }
     ],
     presupuestos: [
       { id: 'presupuestos_gestion', titulo: 'Gestión', icon: '📝', desc: 'Crear, editar, aprobar o rechazar presupuestos.' },
@@ -56,6 +63,11 @@ function App() {
     trabajos: [
       { id: 'trabajos_gestion', titulo: 'Gestión de Trabajos', icon: '🔧', desc: 'Órdenes de trabajos, estados y fechas.' },
       { id: 'trabajos_dashboard', titulo: 'Estado del Taller', icon: '🚥', desc: 'Monitoreo de trabajos iniciados y finalizados.' }
+    ]
+    ,
+    caja: [
+      { id: 'caja_gestion', titulo: 'Gestión de Caja', icon: '💸', desc: 'Ingresos y Salidas de dinero.' },
+      { id: 'caja_dashboard', titulo: 'Estado de Caja', icon: '📈', desc: 'Monitoreo de entradas y salidas de dinero.' }
     ]
   };
 
@@ -164,6 +176,8 @@ function App() {
               <Almacenes />
             ) : seccionActiva === 'stock_movimientos' ? (
               <Movimientos />
+            ) : seccionActiva === 'stock_argon' ? (
+              <Argon />
             ) : seccionActiva === 'trabajos_gestion' ? (
               <Trabajos />
             ) : seccionActiva === 'presupuestos_gestion' ? (
@@ -174,6 +188,12 @@ function App() {
               <Dashboard_EstadoTaller />
             ) : seccionActiva === 'pagos_recibos' ? (
               <Recibos />
+            ) : seccionActiva === 'pagos_comisiones' ? (
+              <Comisiones />
+            ) : seccionActiva === 'pagos_reportes' ? (
+              <Reporte_Saldos />
+            ) : seccionActiva === 'caja_gestion' ? (
+              <Caja />
             ) : (
               <div className="en-construccion">
                 <span className="constructor-icon">🛠️</span>
