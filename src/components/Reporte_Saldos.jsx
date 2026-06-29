@@ -86,8 +86,16 @@ function Reporte_Saldos() {
             };
         });
 
-        reporteClientes.sort((a, b) => b.saldo - a.saldo);
-        setDatosReporte(reporteClientes);
+// 🌟 NUEVO FILTRO: Solo dejamos a los clientes que tengan un historial real
+        // Es decir: o tienen presupuestos aprobados, o tienen recibos/comisiones cargadas.
+        // Esto limpia a los clientes "fantasma" que solo entraron a consultar precios y fueron rechazados.
+        const clientesConActividadReal = reporteClientes.filter(c => 
+            c.totalPresupuestos > 0 || c.totalPagado > 0 || c.totalComisiones > 0
+        );
+
+        clientesConActividadReal.sort((a, b) => b.saldo - a.saldo);
+        
+        setDatosReporte(clientesConActividadReal);
         setCargando(false);
     };
 
@@ -248,18 +256,26 @@ function Reporte_Saldos() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {datosFiltrados.map(c => {
+{datosFiltrados.map(c => {
                                     const tieneDeudaReal = c.saldo > MARGEN_TOLERANCIA;
-                                    const tieneFavorReal = c.saldo < -0.05;
-                                    const estaSaldado = c.saldo >= 0 && c.saldo <= MARGEN_TOLERANCIA;
+                                    const tieneFavorReal = c.saldo < -5000; // Si tiene más de 1000 pesos a favor reales
+                                    const estaSaldado = !tieneDeudaReal && !tieneFavorReal; // Queda en la franja del medio
 
                                     let estadoTexto = `$ ${formatDinero(c.saldo)}`;
                                     let colorTexto = '#000';
                                     let colorFila = '#fff';
 
-                                    if (tieneDeudaReal) { colorTexto = '#dc2626'; colorFila = '#fef2f2'; }
-                                    if (tieneFavorReal) { estadoTexto = `$ ${formatDinero(Math.abs(c.saldo))} (A Favor)`; colorTexto = '#2563eb'; colorFila = '#eff6ff'; }
-                                    if (estaSaldado) { colorTexto = '#10b981'; colorFila = '#f0fdf4'; }
+                                    if (tieneDeudaReal) { 
+                                        colorTexto = '#dc2626'; 
+                                        colorFila = '#fef2f2'; 
+                                    } else if (tieneFavorReal) { 
+                                        estadoTexto = `$ ${formatDinero(Math.abs(c.saldo))} (A Favor)`; 
+                                        colorTexto = '#2563eb'; // Azul
+                                        colorFila = '#eff6ff'; 
+                                    } else if (estaSaldado) { 
+                                        colorTexto = '#10b981'; 
+                                        colorFila = '#f0fdf4'; 
+                                    }
 
                                     return (
                                         <tr key={c.id} style={{ backgroundColor: colorFila }}>
@@ -271,31 +287,31 @@ function Reporte_Saldos() {
                                             <td style={{ ...s.td, fontWeight: 'bold', color: colorTexto, fontSize: '0.80rem' }}>
                                                 {estaSaldado ? '✅ Saldado' : estadoTexto}
                                             </td>
-<td style={{ ...s.td, textAlign: 'center' }}>
-    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-        
-        {/* Botón de Ficha con cartel informativo */}
-        <button 
-            style={s.btnSec} 
-            onClick={() => abrirHistorialCliente(c)}
-            title="Ver ficha histórica y movimientos de cuenta corriente"
-        >
-            👁️
-        </button>
+                                            <td style={{ ...s.td, textAlign: 'center' }}>
+                                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
 
-        {/* Botón de Compensar con cartel informativo */}
-        {tieneDeudaReal && (
-            <button 
-                style={s.btnPr} 
-                onClick={() => handleCompensarCliente(c)}
-                title="Compensar saldo: genera un ajuste automático para saldar la cuenta"
-            >
-                🤝
-            </button>
-        )}
-        
-    </div>
-</td>
+                                                    {/* Botón de Ficha con cartel informativo */}
+                                                    <button
+                                                        style={s.btnSec}
+                                                        onClick={() => abrirHistorialCliente(c)}
+                                                        title="Ver ficha histórica y movimientos de cuenta corriente"
+                                                    >
+                                                        👁️
+                                                    </button>
+
+                                                    {/* Botón de Compensar con cartel informativo */}
+                                                    {tieneDeudaReal && (
+                                                        <button
+                                                            style={s.btnPr}
+                                                            onClick={() => handleCompensarCliente(c)}
+                                                            title="Compensar saldo: genera un ajuste automático para saldar la cuenta"
+                                                        >
+                                                            🤝
+                                                        </button>
+                                                    )}
+
+                                                </div>
+                                            </td>
                                         </tr>
                                     );
                                 })}
@@ -315,9 +331,18 @@ function Reporte_Saldos() {
                         </div>
 
                         <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid #2563eb' }}>
-                            <p style={{ margin: '0 0 5px 0', fontSize: '1.1rem' }}>👤 <b>Cliente:</b> {itemSeleccionado.nombre} {itemSeleccionado.apellido}</p>
-                            <p style={{ margin: 0, color: itemSeleccionado.saldo > MARGEN_TOLERANCIA ? '#b91c1c' : '#16a34a', fontWeight: 'bold' }}>
-                                Saldo Actual de la Cuenta: {itemSeleccionado.saldo > MARGEN_TOLERANCIA ? `$ ${formatDinero(itemSeleccionado.saldo)} (En Deuda)` : itemSeleccionado.saldo < -0.05 ? `$ ${formatDinero(Math.abs(itemSeleccionado.saldo))} (A Favor)` : '✅ Cuenta Saldada'}
+<p style={{ 
+                                margin: 0, 
+                                color: itemSeleccionado.saldo > MARGEN_TOLERANCIA ? '#b91c1c' : (itemSeleccionado.saldo < -1000 ? '#2563eb' : '#16a34a'), 
+                                fontWeight: 'bold' 
+                            }}>
+                                Saldo Actual de la Cuenta: {
+                                    itemSeleccionado.saldo > MARGEN_TOLERANCIA 
+                                        ? `$ ${formatDinero(itemSeleccionado.saldo)} (En Deuda)` 
+                                        : (itemSeleccionado.saldo < -1000 
+                                            ? `$ ${formatDinero(Math.abs(itemSeleccionado.saldo))} (A Favor)` 
+                                            : '✅ Cuenta Saldada')
+                                }
                             </p>
                         </div>
 

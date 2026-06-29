@@ -17,6 +17,7 @@ function Presupuestos() {
 
     // Cabecera del Presupuesto
     const [presupuestoActivo, setPresupuestoActivo] = useState(null);
+    const [estadoPresupuesto, setEstadoPresupuesto] = useState('PENDIENTE');
     const [idCliente, setIdCliente] = useState('');
     const [busquedaCliente, setBusquedaCliente] = useState('');
     const [mostrarSugerenciasCliente, setMostrarSugerenciasCliente] = useState(false);
@@ -117,6 +118,7 @@ function Presupuestos() {
         setDescTrabajo('');
         setDescuento(0);
         setDescuentoMO(0);
+        setEstadoPresupuesto('PENDIENTE');
         setItemsMO([]);
         setItemsProductos([]);
         setPresupuestoActivo(null);
@@ -203,9 +205,9 @@ function Presupuestos() {
         setTipoMotor(p.bd_nomenclador?.tipo || '');
         setIdNomenclador(p.id_nomenclador);
         setMotorSeleccionado(p.bd_nomenclador);
-        setBusquedaMotor(p.bd_nomenclador?.descripcion || ''); // <-- SOLUCIÓN: Cargamos el texto para que el buscador lo mantenga en pantalla
-        setDescTrabajo(p.descripcion_trabajo || ''); // <-- Vincula la observación/descripción guardada
-
+        setBusquedaMotor(p.bd_nomenclador?.descripcion || ''); 
+        setDescTrabajo(p.descripcion_trabajo || ''); 
+setEstadoPresupuesto(p.estado || 'PENDIENTE');
         setDescuento(p.descuento_porcentaje || 0);
         setDescuentoMO(p.descuento_porcentaje_mo || 0);
 
@@ -475,7 +477,7 @@ function Presupuestos() {
                     descuento_porcentaje: descuento,
                     descuento_porcentaje_mo: descuentoMO, // <-- Nuestro nuevo campo
                     total_presupuesto_con_iva: totalFinalConIva,
-                    estado: 'PENDIENTE',
+                    estado: estadoPresupuesto,
                     fecha_presupuesto: new Date().toISOString().split('T')[0]
                 }])
                 .select()
@@ -498,7 +500,8 @@ function Presupuestos() {
                     descuento_porcentaje: descuento,
                     descuento_porcentaje_mo: descuentoMO, // <-- Nuestro nuevo campo
                     total_mo_bruto: totalMO,
-                    total_presupuesto_con_iva: totalFinalConIva
+                    total_presupuesto_con_iva: totalFinalConIva,
+                    estado: estadoPresupuesto,
                 })
                 .eq('id', presuId);
 
@@ -747,8 +750,33 @@ function Presupuestos() {
                 {/* --- VISTA COMPLETA DE CARGA --- */}
                 {(vista === 'nuevo' || vista === 'editar') && (
                     <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '10px' }}>
-                            <h2 style={{ margin: 0 }}>{vista === 'nuevo' ? '✨ Creación de Presupuesto' : `✏️ Editar Presupuesto #${presupuestoActivo?.id}`}</h2>
+<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '10px', alignItems: 'center' }}>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                <h2 style={{ margin: 0 }}>{vista === 'nuevo' ? '✨ Creación de Presupuesto' : `✏️ Editar Presupuesto #${presupuestoActivo?.id}`}</h2>
+                                
+                                {/* SELECTOR DE ESTADO CON COLORES DINÁMICOS */}
+                                <select 
+                                    style={{ 
+                                        padding: '6px 12px', 
+                                        borderRadius: '8px', 
+                                        border: '1px solid #cbd5e1',
+                                        fontWeight: 'bold', 
+                                        fontSize: '0.9rem',
+                                        cursor: 'pointer',
+                                        outline: 'none',
+                                        backgroundColor: estadoPresupuesto === 'APROBADO' ? '#dcfce7' : estadoPresupuesto === 'RECHAZADO' ? '#fee2e2' : '#fef9c3', 
+                                        color: estadoPresupuesto === 'APROBADO' ? '#166534' : estadoPresupuesto === 'RECHAZADO' ? '#991b1b' : '#854d0e' 
+                                    }}
+                                    value={estadoPresupuesto}
+                                    onChange={(e) => setEstadoPresupuesto(e.target.value)}
+                                >
+                                    <option value="PENDIENTE">⏳ PENDIENTE</option>
+                                    <option value="APROBADO">✅ APROBADO</option>
+                                    <option value="RECHAZADO">❌ RECHAZADO</option>
+                                </select>
+                            </div>
+
                             <button style={s.btnSec} onClick={() => setVista('listado')}>← Cancelar y Volver</button>
                         </div>
 
