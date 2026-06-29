@@ -53,13 +53,13 @@ function App() {
       { id: 'stock_argon', titulo: 'Argon', icon: '👨‍🏭', desc: 'Registro de recargas del tubo de Argón.' }
     ],
     presupuestos: [
-      { id: 'presupuestos_gestion', titulo: 'Gestión', icon: '📝', desc: 'Crear, editar, aprobar o rechazar presupuestos.' },
+      { id: 'presupuestos_gestion', titulo: 'Gestión de Presupuestos', icon: '📝', desc: 'Crear, editar, aprobar o rechazar presupuestos.' },
       { id: 'presupuestos_dashboard', titulo: 'Dashboard Presupuestos', icon: '📊', desc: 'Métricas de presupuestos.' }
     ],
     pagos: [
       { id: 'pagos_recibos', titulo: 'Recibos', icon: '💲', desc: 'Cobro a clientes.' },
       { id: 'pagos_comisiones', titulo: 'Comisiones', icon: '🤝', desc: 'Pago a mecánicos.' },
-      { id: 'pagos_reportes', titulo: 'Reportes', icon: '📉', desc: 'Listado de deudores.' }
+      { id: 'pagos_reportes', titulo: 'Deudores', icon: '📉', desc: 'Listado de deudores.' }
     ],
     trabajos: [
       { id: 'trabajos_gestion', titulo: 'Gestión de Trabajos', icon: '🔧', desc: 'Órdenes de trabajos, estados y fechas.' },
@@ -68,7 +68,7 @@ function App() {
     ,
     caja: [
       { id: 'caja_gestion', titulo: 'Gestión de Caja', icon: '💸', desc: 'Ingresos y Salidas de dinero.' },
-      { id: 'caja_dashboard_gastos', titulo: 'Dashboard de Gastos', icon: '📈', desc: 'Monitoreo de salidas de dinero.' }
+      { id: 'caja_dashboard_gastos', titulo: 'Dashboard Gastos', icon: '📈', desc: 'Monitoreo de salidas de dinero.' }
     ]
   };
 
