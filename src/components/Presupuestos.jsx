@@ -18,6 +18,8 @@ function Presupuestos() {
     // Cabecera del Presupuesto
     const [presupuestoActivo, setPresupuestoActivo] = useState(null);
     const [idCliente, setIdCliente] = useState('');
+    const [busquedaCliente, setBusquedaCliente] = useState('');
+    const [mostrarSugerenciasCliente, setMostrarSugerenciasCliente] = useState(false);
     const [idNomenclador, setIdNomenclador] = useState('');
     const [descTrabajo, setDescTrabajo] = useState('');
     const [descuento, setDescuento] = useState(0);
@@ -48,8 +50,66 @@ function Presupuestos() {
     // Nuevo estado para el descuento específico de Mano de Obra
     const [descuentoMO, setDescuentoMO] = useState(0);
 
+    // Buscador Predictivo en Vivo para CLIENTES
+    const RenderBuscadorCliente = (idActual, setIdFn) => (
+        <div style={{ position: 'relative' }}>
+            <input
+                style={s.input}
+                placeholder="🔎 Escriba nombre o apellido..."
+                value={busquedaCliente}
+                onChange={e => {
+                    const valor = e.target.value;
+                    setBusquedaCliente(valor);
+
+                    if (valor.length > 0) {
+                        setMostrarSugerenciasCliente(true);
+                        setIdFn(''); // Borramos el ID para forzar que elija de la lista
+                    } else {
+                        setMostrarSugerenciasCliente(false);
+                    }
+                }}
+                onFocus={() => {
+                    if (busquedaCliente.length > 0) setMostrarSugerenciasCliente(true);
+                }}
+            />
+            {mostrarSugerenciasCliente && (
+                <ul style={{
+                    position: 'absolute', background: '#fff', border: '1px solid #cbd5e1',
+                    width: '100%', zIndex: 10, maxHeight: '200px', overflowY: 'auto',
+                    listStyle: 'none', padding: 0, marginTop: '4px', borderRadius: '6px',
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+                }}>
+                    {clientes
+                        .filter(c => {
+                            const nombreCompleto = `${c.nombre} ${c.apellido}`.toLowerCase();
+                            return nombreCompleto.includes(busquedaCliente.toLowerCase());
+                        })
+                        .map(c => (
+                            <li
+                                key={c.id}
+                                style={{ padding: '10px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9' }}
+                                onMouseOver={(e) => e.target.style.background = '#f8fafc'}
+                                onMouseOut={(e) => e.target.style.background = '#fff'}
+                                onClick={() => {
+                                    setIdFn(c.id); // Guardamos el ID
+                                    setBusquedaCliente(`${c.nombre} ${c.apellido} ${c.es_empresa ? '(Emp)' : ''}`); // Rellenamos el input
+                                    setMostrarSugerenciasCliente(false); // Cerramos lista
+                                }}
+                            >
+                                <b>{c.nombre} {c.apellido}</b> <span style={{ color: '#64748b' }}>{c.es_empresa ? '(Emp)' : ''}</span>
+                            </li>
+                        ))}
+                    {clientes.filter(c => `${c.nombre} ${c.apellido}`.toLowerCase().includes(busquedaCliente.toLowerCase())).length === 0 && (
+                        <li style={{ padding: '10px', color: '#94a3b8', fontStyle: 'italic' }}>No se encontraron clientes...</li>
+                    )}
+                </ul>
+            )}
+        </div>
+    );
+
     const limpiarFormulario = () => {
         setIdCliente('');
+        setBusquedaCliente('');
         setTipoMotor('');
         setBusquedaMotor('');
         setIdNomenclador(null);
@@ -139,6 +199,7 @@ function Presupuestos() {
 
         // 3. Cargamos la Cabecera solucionando el problema del buscador predictivo de motor
         setIdCliente(p.id_cliente);
+        setBusquedaCliente(`${p.bd_clientes?.nombre || ''} ${p.bd_clientes?.apellido || ''}`);
         setTipoMotor(p.bd_nomenclador?.tipo || '');
         setIdNomenclador(p.id_nomenclador);
         setMotorSeleccionado(p.bd_nomenclador);
@@ -571,6 +632,8 @@ function Presupuestos() {
                 setItemsProductos(itemsProdCopiados);
 
                 // Cargamos cabecera
+                setIdCliente(p.id_cliente); // Aseguramos que se copie el ID
+                setBusquedaCliente(`${p.bd_clientes?.nombre || ''} ${p.bd_clientes?.apellido || ''}`); // Llenamos el input visual
                 setIdNomenclador(p.id_nomenclador);
                 setMotorSeleccionado(p.bd_nomenclador);
                 setBusquedaMotor(p.bd_nomenclador?.descripcion || '');
@@ -695,10 +758,7 @@ function Presupuestos() {
                             {/* --- FILA 1: DATOS COMPLETOS DEL CLIENTE --- */}
                             <div>
                                 <label style={s.lbl}>Cliente *</label>
-                                <select style={s.input} value={idCliente} onChange={e => setIdCliente(e.target.value)}>
-                                    <option value="">-- Buscar Cliente --</option>
-                                    {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.apellido} {c.es_empresa ? '(Emp)' : ''}</option>)}
-                                </select>
+                                {RenderBuscadorCliente(idCliente, setIdCliente)}
                             </div>
 
                             <div>
@@ -804,7 +864,7 @@ function Presupuestos() {
                                     style={{ ...s.input, height: '70px', resize: 'vertical' }}
                                     value={descTrabajo}
                                     onChange={e => setDescTrabajo(e.target.value)}
-                                    placeholder="Detalle libre sobre las condiciones, especificaciones extras, fallas encontradas o requerimientos planteados por el cliente..."
+                                    placeholder="Detalle sobre las condiciones, especificaciones extras, fallas encontradas o requerimientos planteados por el cliente..."
                                 />
                             </div>
 
@@ -819,7 +879,7 @@ function Presupuestos() {
 
                                 <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', alignItems: 'center', position: 'relative' }}>
                                     <div style={{ flex: 1 }}>
-                                        <input type="text" style={s.input} placeholder="🔎 Escriba para buscar servicio inteligente..." value={busquedaMO} onChange={e => setBusquedaMO(e.target.value)} />
+                                        <input type="text" style={s.input} placeholder="🔎 Escriba para buscar servicio ..." value={busquedaMO} onChange={e => setBusquedaMO(e.target.value)} />
                                         {moSugeridas.length > 0 && (
                                             <ul style={{ position: 'absolute', top: '100%', left: 0, background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', listStyle: 'none', padding: 0, margin: '4px 0 0 0', zIndex: 99, width: '100%', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                                                 {moSugeridas.map(m => (

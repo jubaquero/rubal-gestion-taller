@@ -27,7 +27,7 @@ function App() {
   // 1. MENÚ PRINCIPAL (NIVEL 0)
   // =========================================================
   const menuPrincipal = [
-    { id: 'configuracion', titulo: 'Configuración', icon: '⚙️', desc: 'Ajustes del sistema y tablas base.' },
+    { id: 'configuracion', titulo: 'Configuración', icon: '⚙️', desc: 'Ajustes del sistema (Clientes, Aumentos, Marcas, Categorías de productos).' },
     { id: 'stock', titulo: 'Stock', icon: '📦', desc: 'Administración de repuestos e insumos.' },
     { id: 'presupuestos', titulo: 'Presupuestos', icon: '📋', desc: 'Crear, editar y enviar presupuestos.' },
     { id: 'trabajos', titulo: 'Trabajos', icon: '🛠️', desc: 'Control de motores, estados y fecha fin.' },
@@ -42,7 +42,7 @@ function App() {
   const subMenus = {
     configuracion: [
       { id: 'configuracion_clientes', titulo: 'Clientes', icon: '👤', desc: 'Administración, alta y búsqueda de clientes.' },
-      { id: 'configuracion_aumentos', titulo: 'Aumentos', icon: '📈', desc: 'Aplicar porcentajes masivos a la mano de obra.' },
+      { id: 'configuracion_aumentos', titulo: 'Aumentos', icon: '📈', desc: 'Aplicar porcentajes masivos a la mano de obra (FACRA).' },
       { id: 'configuracion_marcas', titulo: 'Marcas', icon: '🏷️', desc: 'Gestión y alta de marcas de motores/vehículos.' },
       { id: 'configuracion_categorias', titulo: 'Categorías', icon: '🗂️', desc: 'Categorías de productos y repuestos.' },
     ],
@@ -54,12 +54,12 @@ function App() {
     ],
     presupuestos: [
       { id: 'presupuestos_gestion', titulo: 'Gestión', icon: '📝', desc: 'Crear, editar, aprobar o rechazar presupuestos.' },
-      { id: 'presupuestos_dashboard', titulo: 'Dashboard', icon: '📊', desc: 'Métricas de presupuestos y estados.' }
+      { id: 'presupuestos_dashboard', titulo: 'Dashboard', icon: '📊', desc: 'Métricas de presupuestos.' }
     ],
     pagos: [
-      { id: 'pagos_recibos', titulo: 'Recibos', icon: '💲', desc: 'Cobros de clientes y saldos pendientes.' },
+      { id: 'pagos_recibos', titulo: 'Recibos', icon: '💲', desc: 'Cobro a clientes.' },
       { id: 'pagos_comisiones', titulo: 'Comisiones', icon: '🤝', desc: 'Pago a mecánicos.' },
-      { id: 'pagos_reportes', titulo: 'Reportes', icon: '📉', desc: 'Listado de deudores y salidas de dinero.' }
+      { id: 'pagos_reportes', titulo: 'Reportes', icon: '📉', desc: 'Listado de deudores.' }
     ],
     trabajos: [
       { id: 'trabajos_gestion', titulo: 'Gestión de Trabajos', icon: '🔧', desc: 'Órdenes de trabajos, estados y fechas.' },

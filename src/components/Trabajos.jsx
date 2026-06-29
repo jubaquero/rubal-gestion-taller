@@ -39,7 +39,9 @@ function Trabajos() {
   const [idNomenclador, setIdNomenclador] = useState('');
   const [observacionesTrabajo, setObservacionesTrabajo] = useState('');
 
-
+  // Cliente
+  const [busquedaCliente, setBusquedaCliente] = useState('');
+  const [mostrarSugerenciasCliente, setMostrarSugerenciasCliente] = useState(false);
 
   // Estados para Edición (Lapicitos)
   const [modalEdicionVisible, setModalEdicionVisible] = useState(false);
@@ -74,22 +76,22 @@ function Trabajos() {
 
   const RenderBuscadorNomenclador = (setFn, valorActual) => (
     <div style={{ position: 'relative' }}>
-<input
-  style={s.input}
-  placeholder="🔎 Escriba algunos caracteres del modelo.."
-  value={busquedaMotor}
-  onChange={e => {
-    const valor = e.target.value;
-    setBusquedaMotor(valor);
-    
-    // CAMBIO AQUÍ: Solo mostramos sugerencias si el valor tiene contenido
-    if (valor.length > 0) {
-      setMostrarSugerenciasMotor(true);
-    } else {
-      setMostrarSugerenciasMotor(false);
-    }
-  }}
-/>
+      <input
+        style={s.input}
+        placeholder="🔎 Escriba algunos caracteres del modelo.."
+        value={busquedaMotor}
+        onChange={e => {
+          const valor = e.target.value;
+          setBusquedaMotor(valor);
+
+          // CAMBIO AQUÍ: Solo mostramos sugerencias si el valor tiene contenido
+          if (valor.length > 0) {
+            setMostrarSugerenciasMotor(true);
+          } else {
+            setMostrarSugerenciasMotor(false);
+          }
+        }}
+      />
       {mostrarSugerenciasMotor && (
         <ul style={{ position: 'absolute', background: '#fff', border: '1px solid #ccc', width: '100%', zIndex: 10, maxHeight: '200px', overflowY: 'auto', listStyle: 'none', padding: 0 }}>
           {nomencladores.filter(n => n.descripcion.toLowerCase().includes(busquedaMotor.toLowerCase())).map(n => (
@@ -101,6 +103,63 @@ function Trabajos() {
               {n.descripcion} ({n.tipo})
             </li>
           ))}
+        </ul>
+      )}
+    </div>
+  );
+
+  const RenderBuscadorCliente = (idActual, setIdFn, onSelectExtra) => (
+    <div style={{ position: 'relative' }}>
+      <input
+        style={s.input}
+        placeholder="🔎 Escriba nombre o apellido..."
+        value={busquedaCliente}
+        onChange={e => {
+          const valor = e.target.value;
+          setBusquedaCliente(valor);
+
+          if (valor.length > 0) {
+            setMostrarSugerenciasCliente(true);
+            setIdFn(''); // Borramos el ID si está escribiendo para forzar que elija de la lista
+          } else {
+            setMostrarSugerenciasCliente(false);
+          }
+        }}
+        onFocus={() => {
+          if (busquedaCliente.length > 0) setMostrarSugerenciasCliente(true);
+        }}
+      />
+      {mostrarSugerenciasCliente && (
+        <ul style={{
+          position: 'absolute', background: '#fff', border: '1px solid #cbd5e1',
+          width: '100%', zIndex: 10, maxHeight: '200px', overflowY: 'auto',
+          listStyle: 'none', padding: 0, marginTop: '4px', borderRadius: '6px',
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+        }}>
+          {clientes
+            .filter(c => {
+              const nombreCompleto = `${c.nombre} ${c.apellido}`.toLowerCase();
+              return nombreCompleto.includes(busquedaCliente.toLowerCase());
+            })
+            .map(c => (
+              <li
+                key={c.id}
+                style={{ padding: '10px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9' }}
+                onMouseOver={(e) => e.target.style.background = '#f8fafc'}
+                onMouseOut={(e) => e.target.style.background = '#fff'}
+                onClick={() => {
+                  setIdFn(c.id); // Guardamos el ID
+                  setBusquedaCliente(`${c.nombre} ${c.apellido} ${c.es_empresa ? '(Emp)' : ''}`); // Rellenamos el input
+                  setMostrarSugerenciasCliente(false); // Cerramos lista
+                  if (onSelectExtra) onSelectExtra(c.id); // Disparamos la búsqueda de presupuestos
+                }}
+              >
+                <b>{c.nombre} {c.apellido}</b> <span style={{ color: '#64748b' }}>{c.es_empresa ? '(Emp)' : ''}</span>
+              </li>
+            ))}
+          {clientes.filter(c => `${c.nombre} ${c.apellido}`.toLowerCase().includes(busquedaCliente.toLowerCase())).length === 0 && (
+            <li style={{ padding: '10px', color: '#94a3b8', fontStyle: 'italic' }}>No se encontraron clientes...</li>
+          )}
         </ul>
       )}
     </div>
@@ -417,11 +476,11 @@ function Trabajos() {
     }
   };
 
-const imprimirFicha = () => {
-  const contenido = document.querySelector('.modal-print-card').innerHTML;
-  const ventanaImpresion = window.open('', '_blank', 'width=800,height=1000');
-  
-  ventanaImpresion.document.write(`
+  const imprimirFicha = () => {
+    const contenido = document.querySelector('.modal-print-card').innerHTML;
+    const ventanaImpresion = window.open('', '_blank', 'width=800,height=1000');
+
+    ventanaImpresion.document.write(`
     <html>
       <head>
         <title>Orden de Trabajo</title>
@@ -453,13 +512,13 @@ const imprimirFicha = () => {
       </body>
     </html>
   `);
-  ventanaImpresion.document.close();
-};
+    ventanaImpresion.document.close();
+  };
 
   return (
     <div style={{ padding: '20px' }}>
       {/* AÑADE ESTE BLOQUE CSS AQUÍ */}
-    <style>{`
+      <style>{`
   @media print {
     /* 1. Ocultar absolutamente todo el cuerpo de la página */
     body > *:not(.modal-print-container) { 
@@ -510,6 +569,7 @@ const imprimirFicha = () => {
               {/* Botón Nuevo en Listado */}
               <button style={s.btnPr} onClick={() => {
                 setIdCliente('');
+                setBusquedaCliente('');
                 setTipoMotor('');
                 setIdNomenclador('');
                 setBusquedaMotor(''); // <--- LIMPIA EL CAMPO DEL BUSCADOR
@@ -567,18 +627,7 @@ const imprimirFicha = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                 <div>
                   <label style={s.lbl}>1. Cliente *</label>
-                  <select
-                    style={s.input}
-                    value={idCliente}
-                    onChange={(e) => {
-                      setIdCliente(e.target.value);
-                      obtenerPresupuestosCliente(e.target.value);
-                    }}
-                    required
-                  >
-                    <option value=""></option>
-                    {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.apellido} {c.es_empresa ? '(Emp)' : ''}</option>)}
-                  </select>
+                  {RenderBuscadorCliente(idCliente, setIdCliente, obtenerPresupuestosCliente)}
                 </div>
                 <div>
                   <label style={s.lbl}>2. Tipo *</label>
@@ -666,16 +715,16 @@ const imprimirFicha = () => {
               ) : (
                 <div style={{ position: 'relative' }}>
                   <div style={{ display: 'flex', gap: '5px' }}>
-<input
-  style={s.input}
-  placeholder="Escriba N° Presupuesto..."
-  value={busquedaPresu}
-  onFocus={() => setMostrarSugerencias(true)} // 🌟 ESTO ABRE LA LISTA AL HACER CLIC
-  onChange={e => {
-    setBusquedaPresu(e.target.value);
-    setMostrarSugerencias(true);
-  }}
-/>
+                    <input
+                      style={s.input}
+                      placeholder="Escriba N° Presupuesto..."
+                      value={busquedaPresu}
+                      onFocus={() => setMostrarSugerencias(true)} // 🌟 ESTO ABRE LA LISTA AL HACER CLIC
+                      onChange={e => {
+                        setBusquedaPresu(e.target.value);
+                        setMostrarSugerencias(true);
+                      }}
+                    />
                     {mostrarSugerencias && (
                       <button type="button" style={s.btnSec} onClick={() => setMostrarSugerencias(false)}>X</button>
                     )}
@@ -901,7 +950,7 @@ const imprimirFicha = () => {
           zIndex: 9999, overflowY: 'auto', padding: '10px'
         }}>
 
-        
+
           <div className="modal-print-card" style={{
             background: '#fff', padding: '40px', borderRadius: '8px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
@@ -981,8 +1030,8 @@ const imprimirFicha = () => {
             <div className="no-print" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '40px', borderTop: '2px solid #e2e8f0', paddingTop: '20px' }}>
               <button style={s.btnSec} onClick={() => setModalFichaVisible(false)}>Cerrar</button>
               <button style={s.btnOk} onClick={imprimirFicha}>
-  🖨️ Imprimir / PDF
-</button>
+                🖨️ Imprimir / PDF
+              </button>
             </div>
           </div>
         </div>
