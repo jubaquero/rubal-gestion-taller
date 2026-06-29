@@ -9,6 +9,7 @@ function Productos() {
   const [marcas, setMarcas] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('TODOS');
   const [vista, setVista] = useState('listado');
   const [form, setForm] = useState({});
   const [mostrarSelectorTipo, setMostrarSelectorTipo] = useState(false);
@@ -43,12 +44,20 @@ function Productos() {
     fetchMarcas();
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
+    // 1. Filtramos primero por el TIPO de producto seleccionado
+    let filtradosPorTipo = productosDB;
+    if (filtroTipo !== 'TODOS') {
+      filtradosPorTipo = productosDB.filter(p => p.id_tipo_producto == filtroTipo);
+    }
+
+    // 2. Si no hay búsqueda de texto, devolvemos los filtrados por tipo
     if (!busqueda) {
-      setProductos(productosDB);
+      setProductos(filtradosPorTipo);
     } else {
+      // 3. Si hay búsqueda, cruzamos el texto PERO sobre los ya filtrados por tipo
       const termino = busqueda.toLowerCase();
-      const filtrados = productosDB.filter(p =>
+      const filtradosFinales = filtradosPorTipo.filter(p =>
         (p.codigo || '').toLowerCase().includes(termino) ||
         (p.modelo_auto || '').toLowerCase().includes(termino) ||
         (p.descripcion || '').toLowerCase().includes(termino) ||
@@ -57,9 +66,9 @@ function Productos() {
         (p.bd_marcas?.nombre || '').toLowerCase().includes(termino) ||
         (p.bd_tipos_producto?.nombre || '').toLowerCase().includes(termino)
       );
-      setProductos(filtrados);
+      setProductos(filtradosFinales);
     }
-  }, [busqueda, productosDB]);
+  }, [busqueda, filtroTipo, productosDB]); 
 
   // PAGINACIÓN INTELIGENTE DE FONDO PARA TRAER TODO EL CATÁLOGO SIN LÍMITES
   const fetchProductos = async () => {
@@ -156,7 +165,20 @@ function Productos() {
         <div style={s.card}>
           <h2>📦 Gestión de Repuestos y Productos</h2>
 
-          <div style={s.topBar}>
+<div style={s.topBar}>
+            
+            {/* NUEVO SELECTOR DE TIPO */}
+            <select 
+              value={filtroTipo} 
+              onChange={(e) => setFiltroTipo(e.target.value)}
+              style={{ ...s.inputBusqueda, width: '200px', background: '#f8fafc', fontWeight: 'bold' }}
+            >
+              <option value="TODOS">🏷️ Todos los Tipos</option>
+              {tipos.map(t => (
+                <option key={t.id} value={t.id}>{t.nombre}</option>
+              ))}
+            </select>
+
             <input
               type="text"
               placeholder="🔍 Buscar por código, tipo, marca, medida..."
@@ -164,9 +186,13 @@ function Productos() {
               onChange={(e) => setBusqueda(e.target.value)}
               style={s.inputBusqueda}
             />
-            <button style={s.btnPrincipal} onClick={() => setMostrarSelectorTipo(!mostrarSelectorTipo)}>
-              {mostrarSelectorTipo ? '❌ Cancelar' : '➕ Nuevo Producto'}
-            </button>
+
+            {/* Este div empuja el botón a la derecha */}
+            <div style={{ marginLeft: 'auto' }}>
+                <button style={s.btnPrincipal} onClick={() => setMostrarSelectorTipo(!mostrarSelectorTipo)}>
+                  {mostrarSelectorTipo ? '❌ Cancelar' : '➕ Nuevo Producto'}
+                </button>
+            </div>
           </div>
 
           {mostrarSelectorTipo && (
@@ -181,17 +207,17 @@ function Productos() {
 
           {/* TABLA PRINCIPAL CON DISTRIBUCIÓN DE ANCHOS MEJORADA */}
           <table style={s.tabla}>
-<thead>
-  <tr>
-    <th style={{ ...s.th, width: '12%' }}>Código</th>
-    <th style={{ ...s.th, width: '22%' }}>Modelo Auto</th>
-    <th style={{ ...s.th, width: '18%' }}>Marca</th>
-    <th style={{ ...s.th, width: '14%' }}>Cód. Fab</th>
-    <th style={{ ...s.th, width: '10%' }}>Medida</th>
-    <th style={{ ...s.th, width: '8%', textAlign: 'center' }}>Stock</th>
-    <th style={{ ...s.th, width: '16%', textAlign: 'center' }}>Acciones</th>
-  </tr>
-</thead>
+            <thead>
+              <tr>
+                <th style={{ ...s.th, width: '12%' }}>Código</th>
+                <th style={{ ...s.th, width: '22%' }}>Categoría</th>
+                <th style={{ ...s.th, width: '18%' }}>Marca</th>
+                <th style={{ ...s.th, width: '14%' }}>Cód. Fab</th>
+                <th style={{ ...s.th, width: '10%' }}>Medida</th>
+                <th style={{ ...s.th, width: '8%', textAlign: 'center' }}>Stock</th>
+                <th style={{ ...s.th, width: '16%', textAlign: 'center' }}>Acciones</th>
+              </tr>
+            </thead>
             <tbody>
               {productos.length === 0 ? (
                 <tr><td colSpan="7" style={{ padding: '15px', textAlign: 'center', color: '#64748b' }}>No se encontraron repuestos.</td></tr>
