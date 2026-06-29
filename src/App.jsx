@@ -54,7 +54,7 @@ function App() {
     ],
     presupuestos: [
       { id: 'presupuestos_gestion', titulo: 'Gestión', icon: '📝', desc: 'Crear, editar, aprobar o rechazar presupuestos.' },
-      { id: 'presupuestos_dashboard', titulo: 'Dashboard', icon: '📊', desc: 'Métricas de presupuestos.' }
+      { id: 'presupuestos_dashboard', titulo: 'Dashboard Presupuestos', icon: '📊', desc: 'Métricas de presupuestos.' }
     ],
     pagos: [
       { id: 'pagos_recibos', titulo: 'Recibos', icon: '💲', desc: 'Cobro a clientes.' },
@@ -63,12 +63,12 @@ function App() {
     ],
     trabajos: [
       { id: 'trabajos_gestion', titulo: 'Gestión de Trabajos', icon: '🔧', desc: 'Órdenes de trabajos, estados y fechas.' },
-      { id: 'trabajos_dashboard', titulo: 'Estado del Taller', icon: '🚥', desc: 'Monitoreo de trabajos iniciados y finalizados.' }
+      { id: 'trabajos_dashboard', titulo: 'Dashboard Trabajos', icon: '🚥', desc: 'Monitoreo de trabajos iniciados y finalizados.' }
     ]
     ,
     caja: [
       { id: 'caja_gestion', titulo: 'Gestión de Caja', icon: '💸', desc: 'Ingresos y Salidas de dinero.' },
-      { id: 'caja_dashboard_gastos', titulo: 'Estado de Gastos', icon: '📈', desc: 'Monitoreo de salidas de dinero.' }
+      { id: 'caja_dashboard_gastos', titulo: 'Dashboard de Gastos', icon: '📈', desc: 'Monitoreo de salidas de dinero.' }
     ]
   };
 
