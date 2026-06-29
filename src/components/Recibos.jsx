@@ -59,22 +59,47 @@ function Recibos() {
         setMostrarSugerencias(false);
     };
 
-    const handleGuardar = async () => {
+const handleGuardar = async () => {
         if (!formData.id_cliente || !formData.importe) return alert("⚠️ Por favor, complete el Importe y seleccione un Presupuesto.");
-        const dataToSave = { ...formData };
-        if (dataToSave.id) delete dataToSave.id;
 
-        // Formateo seguro para base de datos
-        if (!dataToSave.id_presupuesto) dataToSave.id_presupuesto = null;
-        dataToSave.descuento = dataToSave.descuento ? Number(dataToSave.descuento) : 0;
+        // 1. Preparamos el objeto limpio para la base de datos
+        // Extraemos explícitamente los campos para evitar enviar basura o el 'id'
+        const dataToSave = {
+            id_presupuesto: formData.id_presupuesto || null,
+            id_cliente: formData.id_cliente,
+            fecha_recibo: formData.fecha_recibo,
+            importe: Number(formData.importe),
+            forma_pago: formData.forma_pago,
+            nota: formData.nota || '',
+            descuento: formData.descuento ? Number(formData.descuento) : 0
+        };
 
-        if (formData.id) {
-            await supabase.from('bd_recibos').update(dataToSave).eq('id', formData.id);
-        } else {
-            await supabase.from('bd_recibos').insert([dataToSave]);
+        try {
+            if (formData.id) {
+                // ACTUALIZAR: Pasamos dataToSave (SIN EL ID ADENTRO) y el .eq('id', ...)
+                const { error } = await supabase
+                    .from('bd_recibos')
+                    .update(dataToSave)
+                    .eq('id', formData.id);
+
+                if (error) throw error;
+                alert("✅ Recibo actualizado correctamente.");
+            } else {
+                // INSERTAR: Pasamos el array con dataToSave
+                const { error } = await supabase
+                    .from('bd_recibos')
+                    .insert([dataToSave]);
+
+                if (error) throw error;
+                alert("✅ Recibo guardado correctamente.");
+            }
+            
+            setVista('listado');
+            cargarDatos();
+        } catch (error) {
+            console.error("Error de Supabase:", error);
+            alert("Hubo un error al guardar: " + error.message);
         }
-        setVista('listado');
-        cargarDatos();
     };
 
     const getNombreCliente = (id) => {

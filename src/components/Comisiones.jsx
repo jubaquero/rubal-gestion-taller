@@ -49,33 +49,43 @@ function Comisiones() {
 const handleGuardar = async () => {
         if (!formData.id_cliente || !formData.importe) return alert("⚠️ Por favor, complete el Importe y seleccione un Presupuesto.");
         
-        // Hacemos una copia de los datos del formulario
-        const dataToSave = { ...formData, nota: formData.nota || '' };
+        // 1. Creamos una copia limpia para guardar
+        const dataToSave = { 
+            id_presupuesto: formData.id_presupuesto || null,
+            id_cliente: formData.id_cliente,
+            fecha: formData.fecha,
+            importe: Number(formData.importe),
+            forma_pago: formData.forma_pago,
+            nota: formData.nota || ''
+        };
         
-        // Limpiamos los campos que NO van en la base de datos
-        if (dataToSave.id) delete dataToSave.id;
-        if (dataToSave.bd_clientes) delete dataToSave.bd_clientes; // <-- ¡Esta es la solución mágica!
-
-        if (formData.id) {
-            // Actualizar
-            const { error } = await supabase.from('bd_comisiones').update(dataToSave).eq('id', formData.id);
-            if (error) {
-                console.error("Error de Supabase:", error);
-                alert("Hubo un error al guardar: " + error.message);
-                return;
+        // 2. Si es edición, Supabase necesita el ID, si es nuevo, NO debe ir el ID
+        try {
+            if (formData.id) {
+                // ACTUALIZAR: Aquí SÍ enviamos el ID en el .eq(), pero no en el objeto de datos
+                const { error } = await supabase
+                    .from('bd_comisiones')
+                    .update(dataToSave)
+                    .eq('id', formData.id);
+                
+                if (error) throw error;
+                alert("✅ Comisión actualizada correctamente.");
+            } else {
+                // INSERTAR: Aquí NO enviamos el ID para nada
+                const { error } = await supabase
+                    .from('bd_comisiones')
+                    .insert([dataToSave]);
+                
+                if (error) throw error;
+                alert("✅ Comisión guardada correctamente.");
             }
-        } else {
-            // Crear nuevo
-            const { error } = await supabase.from('bd_comisiones').insert([dataToSave]);
-            if (error) {
-                console.error("Error de Supabase:", error);
-                alert("Hubo un error al guardar: " + error.message);
-                return;
-            }
+            
+            setVista('listado');
+            cargarDatos();
+        } catch (error) {
+            console.error("Error de Supabase:", error);
+            alert("Hubo un error al guardar: " + error.message);
         }
-        
-        setVista('listado');
-        cargarDatos();
     };
 
     const getNombreCliente = (id) => {
