@@ -4,6 +4,7 @@ import logoRubal from './assets/logo_rubal.png';
 import Clientes from './components/Clientes';
 import Marcas from './components/Marcas';
 import Categorias from './components/Categorias';
+import Proveedores from './components/Proveedores';
 import Aumentos from './components/Aumentos';
 import Productos from './components/Productos';
 import Almacenes from './components/Almacenes';
@@ -45,6 +46,7 @@ function App() {
       { id: 'configuracion_aumentos', titulo: 'Aumentos', icon: '📈', desc: 'Aplicar porcentajes masivos a la mano de obra (FACRA).' },
       { id: 'configuracion_marcas', titulo: 'Marcas', icon: '🏷️', desc: 'Gestión y alta de marcas de motores/vehículos.' },
       { id: 'configuracion_categorias', titulo: 'Categorías', icon: '🗂️', desc: 'Categorías de productos y repuestos.' },
+      { id: 'configuracion_proveedores', titulo: 'Proveedores', icon: '🚛', desc: 'Administración, alta y búsqueda de Proveedores.' },
     ],
     stock: [
       { id: 'stock_productos', titulo: 'Productos', icon: '🧰', desc: 'Catálogo, stock actual y ficha de movimientos.' },
@@ -170,6 +172,8 @@ function App() {
               <Categorias />
             ) : seccionActiva === 'configuracion_aumentos' ? (
               <Aumentos />
+              ) : seccionActiva === 'configuracion_proveedores' ? (
+              <Proveedores />
             ) : seccionActiva === 'stock_productos' ? (
               <Productos />
             ) : seccionActiva === 'stock_almacenes' ? (
