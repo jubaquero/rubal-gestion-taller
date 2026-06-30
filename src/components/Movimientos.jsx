@@ -401,7 +401,7 @@ const [almacenesDelProducto, setAlmacenesDelProducto] = useState([]);
                                 ) : (
                                     movimientosProducto.map(m => (
                                         <tr key={m.id} style={s.tr}>
-                                            <td style={s.td}>{new Date(m.fecha).toLocaleDateString()}</td>
+                                            <td style={s.td}>{new Date(m.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</td>
                                             <td style={s.td}>{m.tipo_movimiento || (m.cantidad < 0 ? 'Salida' : 'Entrada')}</td>
                                             <td style={{ ...s.td, fontWeight: 'bold', color: m.cantidad < 0 ? '#dc2626' : '#16a34a' }}>
                                                 {m.cantidad}

@@ -16,7 +16,6 @@ function Productos() {
 
   // ESTILOS AVANZADOS PARA CORREGIR EL ANCHO DE LA TABLA Y DAR COHERENCIA VISUAL
   const s = {
-    // Cambiá el maxWidth a 1250px o incluso 1300px
     card: { background: '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', maxWidth: '1250px', margin: '0 auto', overflowX: 'auto' },
     topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '15px' },
     inputBusqueda: { padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', width: '350px', fontSize: '1rem' },
@@ -24,10 +23,10 @@ function Productos() {
     btnSecundario: { background: '#64748b', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', marginLeft: '10px' },
 
     // Mejoras de ancho y distribución en la tabla
-    tabla: { width: '100%', borderCollapse: 'collapse', marginTop: '10px', tableLayout: 'fixed', fontSize: '0.95rem' }, // tableLayout fixed distribuye según los th
+    tabla: { width: '100%', borderCollapse: 'collapse', marginTop: '10px', tableLayout: 'fixed', fontSize: '0.95rem' }, 
     th: { background: '#f1f5f9', padding: '12px', textAlign: 'left', borderBottom: '2px solid #e2e8f0', fontWeight: 'bold', color: '#1e293b' },
     tr: { borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' },
-    td: { padding: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }, // Evita que se deforme el ancho
+    td: { padding: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }, 
     acciones: { display: 'flex', gap: '14px', alignItems: 'center' },
 
     formFila: { display: 'flex', alignItems: 'center', marginBottom: '15px' },
@@ -44,7 +43,7 @@ function Productos() {
     fetchMarcas();
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
     // 1. Filtramos primero por el TIPO de producto seleccionado
     let filtradosPorTipo = productosDB;
     if (filtroTipo !== 'TODOS') {
@@ -61,16 +60,16 @@ useEffect(() => {
         (p.codigo || '').toLowerCase().includes(termino) ||
         (p.modelo_auto || '').toLowerCase().includes(termino) ||
         (p.descripcion || '').toLowerCase().includes(termino) ||
-        (p.codigo_fabricante || '').toLowerCase().includes(termino) ||
+        (p.codigo_fabricante || '').toLowerCase().includes(termino) || // Busca por código fábrica
         (p.medida || '').toLowerCase().includes(termino) ||
         (p.bd_marcas?.nombre || '').toLowerCase().includes(termino) ||
         (p.bd_tipos_producto?.nombre || '').toLowerCase().includes(termino)
       );
       setProductos(filtradosFinales);
     }
-  }, [busqueda, filtroTipo, productosDB]); 
+  }, [busqueda, filtroTipo, productosDB]);
 
-  // PAGINACIÓN INTELIGENTE DE FONDO PARA TRAER TODO EL CATÁLOGO SIN LÍMITES
+  // PAGINACIÓN INTELIGENTE DE FONDO
   const fetchProductos = async () => {
     let todosLosProductos = [];
     let rangoInicio = 0;
@@ -113,7 +112,7 @@ useEffect(() => {
     }
   };
 
-  const guardarProducto = async () => {
+const guardarProducto = async () => {
     const { bd_tipos_producto, bd_marcas, ...datosAGuardar } = form;
 
     if (datosAGuardar.id) {
@@ -125,8 +124,14 @@ useEffect(() => {
         await supabase.from('bd_tipos_producto').update({ ultimo_numero: tipo.ultimo_numero + 1 }).eq('id', tipo.id);
       }
     }
+    
+    // 🌟 AQUÍ ESTÁ EL CAMBIO CLAVE 🌟
+    setForm({}); // <--- Vaciamos por completo el objeto del formulario para que no quede "sucio"
+    setFiltroTipo('TODOS'); // Opcional: resetea el filtro si querés ver todo el catálogo fresco
+    
     setVista('listado');
     fetchProductos();
+    fetchTipos(); // <--- Volvemos a traer los tipos para tener el 'ultimo_numero' actualizado al instante
   };
 
   const eliminarProducto = async (p) => {
@@ -165,9 +170,8 @@ useEffect(() => {
         <div style={s.card}>
           <h2>📦 Gestión de Repuestos y Productos</h2>
 
-<div style={s.topBar}>
-            
-            {/* NUEVO SELECTOR DE TIPO */}
+          <div style={s.topBar}>
+            {/* SELECTOR DE TIPO */}
             <select 
               value={filtroTipo} 
               onChange={(e) => setFiltroTipo(e.target.value)}
@@ -181,15 +185,21 @@ useEffect(() => {
 
             <input
               type="text"
-              placeholder="🔍 Buscar por código, tipo, marca, medida..."
+              placeholder="🔍 Buscar por código, marca, modelo, cód. fábrica..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               style={s.inputBusqueda}
             />
 
-            {/* Este div empuja el botón a la derecha */}
+            {/* BOTÓN NUEVO CORREGIDO: Resetea el formulario por completo */}
             <div style={{ marginLeft: 'auto' }}>
-                <button style={s.btnPrincipal} onClick={() => setMostrarSelectorTipo(!mostrarSelectorTipo)}>
+                <button 
+                  style={s.btnPrincipal} 
+                  onClick={() => {
+                    setForm({}); // <--- SOLUCIÓN: Limpia el objeto viejo para que no arrastre IDs sucios
+                    setMostrarSelectorTipo(!mostrarSelectorTipo);
+                  }}
+                >
                   {mostrarSelectorTipo ? '❌ Cancelar' : '➕ Nuevo Producto'}
                 </button>
             </div>
@@ -198,29 +208,30 @@ useEffect(() => {
           {mostrarSelectorTipo && (
             <div style={s.modalTipo}>
               <label style={{ fontWeight: 'bold', marginRight: '10px' }}>Seleccione el Tipo de Repuesto:</label>
-              <select onChange={(e) => iniciarNuevoProducto(e.target.value)} style={{ padding: '8px', borderRadius: '6px' }}>
+              <select onChange={(e) => iniciarNuevoProducto(e.target.value)} style={{ padding: '8px', borderRadius: '6px' }} defaultValue="">
                 <option value="">-- Elegir Tipo --</option>
                 {tipos.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
               </select>
             </div>
           )}
 
-          {/* TABLA PRINCIPAL CON DISTRIBUCIÓN DE ANCHOS MEJORADA */}
+          {/* TABLA PRINCIPAL CORREGIDA Y ACTUALIZADA */}
           <table style={s.tabla}>
             <thead>
               <tr>
-                <th style={{ ...s.th, width: '12%' }}>Código</th>
-                <th style={{ ...s.th, width: '22%' }}>Categoría</th>
-                <th style={{ ...s.th, width: '18%' }}>Marca</th>
-                <th style={{ ...s.th, width: '14%' }}>Cód. Fab</th>
+                <th style={{ ...s.th, width: '10%' }}>Código</th>
+                <th style={{ ...s.th, width: '18%' }}>Categoría</th>
+                <th style={{ ...s.th, width: '18%' }}>Modelo</th>
+                <th style={{ ...s.th, width: '14%' }}>Marca</th>
+                <th style={{ ...s.th, width: '16%' }}>Cód. Fab</th> {/* 🌟 NUEVA COLUMNA */}
                 <th style={{ ...s.th, width: '10%' }}>Medida</th>
-                <th style={{ ...s.th, width: '8%', textAlign: 'center' }}>Stock</th>
-                <th style={{ ...s.th, width: '16%', textAlign: 'center' }}>Acciones</th>
+                <th style={{ ...s.th, width: '6%', textAlign: 'center' }}>Stock</th>
+                <th style={{ ...s.th, width: '12%', textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {productos.length === 0 ? (
-                <tr><td colSpan="7" style={{ padding: '15px', textAlign: 'center', color: '#64748b' }}>No se encontraron repuestos.</td></tr>
+                <tr><td colSpan="8" style={{ padding: '15px', textAlign: 'center', color: '#64748b' }}>No se encontraron repuestos.</td></tr>
               ) : (
                 productos.map(p => (
                   <tr key={p.id} style={s.tr} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fdf2f2'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
@@ -228,9 +239,9 @@ useEffect(() => {
                     <td style={s.td} title={p.bd_tipos_producto?.nombre}>{p.bd_tipos_producto?.nombre || '-'}</td>
                     <td style={s.td} title={p.modelo_auto}>{p.modelo_auto || '-'}</td>
                     <td style={s.td} title={p.bd_marcas?.nombre}>{p.bd_marcas?.nombre || '-'}</td>
+                    <td style={s.td} title={p.codigo_fabricante}>{p.codigo_fabricante || '-'}</td> {/* 🌟 MUESTRA CÓDIGO FÁBRICA */}
                     <td style={s.td} title={p.medida}>{p.medida || '-'}</td>
 
-                    {/* COLUMNA STOCK LEÍDA DIRECTAMENTE DE LA BD */}
                     <td style={{ ...s.td, textAlign: 'center', fontWeight: 'bold', color: (p.stock_actual || 0) > 0 ? '#16a34a' : '#dc2626' }}>
                       {p.stock_actual || 0}
                     </td>
