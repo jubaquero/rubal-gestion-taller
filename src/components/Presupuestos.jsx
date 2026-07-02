@@ -14,6 +14,7 @@ function Presupuestos() {
     const [filtroEstado, setFiltroEstado] = useState('TODOS');
     const [filtroAño, setFiltroAño] = useState('TODOS');
     const [cargando, setCargando] = useState(true);
+const [tiposUnicos, setTiposUnicos] = useState([]);
 
     // Cabecera del Presupuesto
     const [presupuestoActivo, setPresupuestoActivo] = useState(null);
@@ -352,18 +353,58 @@ setEstadoPresupuesto(p.estado || 'PENDIENTE');
         return () => clearTimeout(timeoutId);
     }, [busquedaMO]);
 
-    const cargarDatos = async () => {
-        setCargando(true);
-        const [bp, bc, bn] = await Promise.all([
-            supabase.from('bd_presupuestos').select('*, bd_clientes(*), bd_nomenclador(*)').order('id', { ascending: false }),
-            supabase.from('bd_clientes').select('*').order('nombre'),
-            supabase.from('bd_nomenclador').select('*').order('descripcion')
-        ]);
-        if (bp.data) setPresupuestos(bp.data);
-        if (bc.data) setClientes(bc.data);
-        if (bn.data) setNomencladores(bn.data);
-        setCargando(false);
+const cargarDatos = async () => {
+    setCargando(true);
+    // Quitamos bn de la carga inicial
+    const [bp, bc] = await Promise.all([
+        supabase.from('bd_presupuestos').select('*, bd_clientes(*), bd_nomenclador(*)').order('id', { ascending: false }),
+        supabase.from('bd_clientes').select('*').order('nombre')
+    ]);
+    if (bp.data) setPresupuestos(bp.data);
+    if (bc.data) setClientes(bc.data);
+    setCargando(false);
+};
+
+// BUSCADOR PREDICTIVO EN VIVO PARA MOTORES (Consultando al servidor)
+useEffect(() => {
+    const buscarMotorEnServidor = async () => {
+        if (busquedaMotor.length < 2) {
+            setMotoresSugeridos([]);
+            return;
+        }
+
+        let query = supabase
+            .from('bd_nomenclador')
+            .select('*')
+            .ilike('descripcion', `%${busquedaMotor}%`)
+            .limit(20); // Traemos solo 20 resultados para ser rápidos
+
+        // Si el usuario seleccionó un "Tipo", lo aplicamos como filtro
+        if (tipoMotor) {
+            query = query.eq('tipo', tipoMotor);
+        }
+
+        const { data, error } = await query;
+        if (!error) setMotoresSugeridos(data || []);
     };
+
+    const timeoutId = setTimeout(buscarMotorEnServidor, 300);
+    return () => clearTimeout(timeoutId);
+}, [busquedaMotor, tipoMotor]); // Se ejecuta al escribir o cambiar el tipo
+
+
+useEffect(() => {
+    const obtenerTipos = async () => {
+        const { data } = await supabase.from('bd_nomenclador').select('tipo').order('tipo');
+        if (data) {
+            // Filtramos duplicados y valores vacíos
+            const unicos = [...new Set(data.map(n => n.tipo))].filter(Boolean);
+            setTiposUnicos(unicos); // Ahora esto funcionará porque declaraste el estado en el paso 1
+        }
+    };
+    obtenerTipos();
+}, []);
+
 
     // Manejo del cambio de Motor/Tapa para deducir categoría y tipo automáticamente
     const handleCambioNomenclador = (id) => {
@@ -822,15 +863,14 @@ setEstadoPresupuesto(p.estado || 'PENDIENTE');
                             {/* --- FILA 2: DATOS DEL MOTOR / NOMENCLADOR --- */}
                             <div>
                                 <label style={s.lbl}>Tipo Componente *</label>
-                                <select style={s.input} value={tipoMotor} onChange={e => {
-                                    setTipoMotor(e.target.value);
-                                    setIdNomenclador('');
-                                    setMotorSeleccionado(null);
-                                    setItemsMO([]);
-                                }}>
-                                    <option value="">-- Seleccionar Tipo --</option>
-                                    {tiposMotoresUnicos.map(t => <option key={t} value={t}>{t}</option>)}
-                                </select>
+<select style={s.input} value={tipoMotor} onChange={e => {
+    setTipoMotor(e.target.value);
+    setBusquedaMotor(''); // Al cambiar de tipo, limpiamos el buscador de motores
+    setMotorSeleccionado(null);
+}}>
+    <option value="">-- Seleccionar Tipo --</option>
+    {tiposUnicos.map(t => <option key={t} value={t}>{t}</option>)}
+</select>
                             </div>
 
                             {/* El buscador de modelo ocupa 2 columnas completas para dar espacio al texto fierrero largo */}
