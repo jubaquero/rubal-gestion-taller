@@ -116,41 +116,48 @@ const guardarProducto = async () => {
     // 1. Desestructuramos
     const { bd_tipos_producto, bd_marcas, ...datosAGuardar } = form;
 
-    // 2. Limpieza de datos antes de enviar
-    // Convertimos a null si el valor es un string vacío, o a número si tiene valor
-    const limpiarDato = (valor) => (valor === "" || valor === undefined ? null : Number(valor));
-
+    // 2. CORRECCIÓN: Limpieza profunda de los IDs
+    // Convertimos a null si es un string vacío o un 0, para evitar el error de foreign key
     const datosFinales = {
         ...datosAGuardar,
-        id_tipo_producto: limpiarDato(datosAGuardar.id_tipo_producto),
-        id_marca: limpiarDato(datosAGuardar.id_marca),
-        stock_actual: limpiarDato(datosAGuardar.stock_actual) || 0,
-        // Eliminamos el ID para que no entre en el cuerpo del PATCH (Error 400 anterior)
-        id: undefined 
+        id_tipo_producto: (datosAGuardar.id_tipo_producto && datosAGuardar.id_tipo_producto !== 0) 
+                          ? Number(datosAGuardar.id_tipo_producto) 
+                          : null,
+        id_marca: (datosAGuardar.id_marca && datosAGuardar.id_marca !== 0 && datosAGuardar.id_marca !== "") 
+                  ? Number(datosAGuardar.id_marca) 
+                  : null,
+        stock_actual: Number(datosAGuardar.stock_actual || 0)
     };
 
-    // Eliminamos la propiedad id del objeto para el update
-    delete datosFinales.id; 
+    // 3. Eliminamos el ID del objeto para el update
+    const idProducto = datosFinales.id;
+    delete datosFinales.id;
 
-    if (datosAGuardar.id) {
+    if (idProducto) {
         // ACTUALIZACIÓN
         const { error } = await supabase
             .from('bd_productos')
             .update(datosFinales)
-            .eq('id', datosAGuardar.id);
+            .eq('id', idProducto);
         
-        if (error) console.error("Error al actualizar:", error);
+        if (error) {
+            console.error("Error al actualizar:", error);
+            alert("Error al actualizar: " + error.message);
+        }
     } else {
         // CREACIÓN
         const { error } = await supabase
             .from('bd_productos')
             .insert([datosFinales]);
         
-        if (error) console.error("Error al insertar:", error);
-        
-        const tipo = tipos.find(t => t.id == datosAGuardar.id_tipo_producto);
-        if (tipo) {
-            await supabase.from('bd_tipos_producto').update({ ultimo_numero: tipo.ultimo_numero + 1 }).eq('id', tipo.id);
+        if (error) {
+            console.error("Error al insertar:", error);
+            alert("Error al insertar: " + error.message);
+        } else {
+            const tipo = tipos.find(t => t.id == datosFinales.id_tipo_producto);
+            if (tipo) {
+                await supabase.from('bd_tipos_producto').update({ ultimo_numero: tipo.ultimo_numero + 1 }).eq('id', tipo.id);
+            }
         }
     }
     
@@ -160,7 +167,6 @@ const guardarProducto = async () => {
     fetchProductos();
     fetchTipos();
 };
-
   const eliminarProducto = async (p) => {
     const { data: movs } = await supabase.from('bd_movimientos').select('id').eq('id_producto', p.id).limit(1);
     const { data: trabs } = await supabase.from('bd_trabajos_p').select('id').eq('id_producto', p.id).limit(1);
