@@ -80,7 +80,7 @@ function Productos() {
       const { data } = await supabase
         .from('bd_productos')
         .select('*, bd_tipos_producto(*), bd_marcas(*)')
-        .order('id', { ascending: false })
+        .order('id', { ascending: true })
         .range(rangoInicio, rangoInicio + cantidadPorPagina - 1);
 
       if (data && data.length > 0) {

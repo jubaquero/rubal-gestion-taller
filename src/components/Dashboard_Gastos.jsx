@@ -115,7 +115,7 @@ function Dashboad_Gastos() {
             
             {/* SECCIÓN DE FILTROS INTERNOS DEL DASHBOARD */}
             <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>Filtros del Tablero</h4>
+                
                 
                 {/* Selector de Año */}
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>

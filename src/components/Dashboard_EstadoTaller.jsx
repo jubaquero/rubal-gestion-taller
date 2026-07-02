@@ -104,10 +104,14 @@ if (idsTrabajos.length > 0) {
     return (
         <div style={{ padding: '25px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <h2 style={{ margin: 0 }}>🚥 Dashboard {anio}</h2>
-                <select value={anio} onChange={(e) => setAnio(e.target.value)} style={{ padding: '10px', borderRadius: '8px', fontSize: '1.1rem' }}>
-                    {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
+                <h2 style={{ margin: 0 }}>🚥 Indicadores Año: {anio}</h2>
+
+<div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1e293b' }}>Año:</span>
+    <select value={anio} onChange={(e) => setAnio(e.target.value)} style={{ padding: '10px', borderRadius: '8px', fontSize: '1.1rem' }}>
+        {[2023, 2024, 2025, 2026, 2027, 2028].map(y => <option key={y} value={y}>{y}</option>)}
+    </select>
+</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>

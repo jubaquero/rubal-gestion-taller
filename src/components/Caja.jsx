@@ -16,7 +16,7 @@ function Caja() {
     const estadoInicialIngreso = {
         id: null,
         fecha: new Date().toISOString().split('T')[0],
-        id_cliente: "", 
+        id_cliente: "",
         detalle: "",
         categoria: "",
         importe: "",
@@ -28,14 +28,14 @@ function Caja() {
     };
 
     const estadoInicialGasto = {
-        id: null, 
-        fecha: new Date().toISOString().split('T')[0], 
-        detalle: '', 
-        importe: '', 
+        id: null,
+        fecha: new Date().toISOString().split('T')[0],
+        detalle: '',
+        importe: '',
         id_proveedor: '', // <--- CAMBIADO destino por id_proveedor
-        categoria: '', 
-        moneda: 'PESO', 
-        medio_pago: 'EFECTIVO', 
+        categoria: '',
+        moneda: 'PESO',
+        medio_pago: 'EFECTIVO',
         tipo: 'VARIABLE'
     };
 
@@ -47,7 +47,7 @@ function Caja() {
     const añosDisponibles = [...new Set([
         ...ingresos.map(i => new Date(i.fecha).getFullYear().toString()),
         ...gastos.map(g => new Date(g.fecha).getFullYear().toString()),
-        new Date().getFullYear().toString() 
+        new Date().getFullYear().toString()
     ])].sort().reverse();
 
     const [mesFiltro, setMesFiltro] = useState('TODOS');
@@ -66,7 +66,7 @@ function Caja() {
             .from('bd_proveedores')
             .select('*')
             .order('nombre', { ascending: true });
-        
+
         if (error) console.error("Error al traer proveedores:", error);
         else setProveedores(data || []);
     };
@@ -87,8 +87,8 @@ function Caja() {
 
     const formatDinero = (valor) => {
         return new Intl.NumberFormat('es-AR', {
-            minimumFractionDigits: 0, 
-            maximumFractionDigits: 0  
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
         }).format(Number(valor || 0));
     };
 
@@ -120,7 +120,7 @@ function Caja() {
                 onChange={e => {
                     const valor = e.target.value;
                     setBusquedaProveedor(valor);
-                    
+
                     if (valor.length > 0) {
                         setMostrarSugerenciasProveedor(true);
                         setIdFn(''); // Limpia el ID para obligar a seleccionar una opción real
@@ -133,24 +133,24 @@ function Caja() {
                 }}
             />
             {mostrarSugerenciasProveedor && (
-                <ul style={{ 
-                    position: 'absolute', background: '#fff', border: '1px solid #cbd5e1', 
-                    width: '100%', zIndex: 100, maxHeight: '180px', overflowY: 'auto', 
-                    listStyle: 'none', padding: 0, marginTop: '4px', borderRadius: '6px', 
-                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' 
+                <ul style={{
+                    position: 'absolute', background: '#fff', border: '1px solid #cbd5e1',
+                    width: '100%', zIndex: 100, maxHeight: '180px', overflowY: 'auto',
+                    listStyle: 'none', padding: 0, marginTop: '4px', borderRadius: '6px',
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
                 }}>
                     {proveedores
                         .filter(p => (p.nombre || '').toLowerCase().includes(busquedaProveedor.toLowerCase()))
                         .map(p => (
-                            <li 
-                                key={p.id} 
-                                style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: '0.9rem', textAlign: 'left' }} 
+                            <li
+                                key={p.id}
+                                style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: '0.9rem', textAlign: 'left' }}
                                 onMouseOver={(e) => e.target.style.background = '#f8fafc'}
                                 onMouseOut={(e) => e.target.style.background = '#fff'}
                                 onClick={() => {
-                                    setIdFn(p.id); 
-                                    setBusquedaProveedor(p.nombre); 
-                                    setMostrarSugerenciasProveedor(false); 
+                                    setIdFn(p.id);
+                                    setBusquedaProveedor(p.nombre);
+                                    setMostrarSugerenciasProveedor(false);
                                 }}
                             >
                                 <b>{p.nombre}</b> <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>#{p.id}</span>
@@ -169,12 +169,12 @@ function Caja() {
     const handleGuardarIngreso = async () => {
         if (!formIngreso.fecha || !formIngreso.importe) return alert("⚠️ Fecha e Importe son obligatorios.");
 
-        const dataToSave = { 
-            ...formIngreso, 
+        const dataToSave = {
+            ...formIngreso,
             importe: Number(formIngreso.importe),
             id_cliente: formIngreso.id_cliente ? Number(formIngreso.id_cliente) : null
         };
-        
+
         delete dataToSave.id;
 
         try {
@@ -192,7 +192,7 @@ function Caja() {
 
                 if (error) throw error;
             }
-            
+
             setVista('listado');
             cargarDatos();
         } catch (err) {
@@ -205,7 +205,7 @@ function Caja() {
         if (!formGasto.fecha || !formGasto.importe) return alert("⚠️ Fecha e Importe son obligatorios.");
 
         // 1. Limpiamos y preparamos el objeto para Supabase
-        const dataToSave = { 
+        const dataToSave = {
             fecha: formGasto.fecha,
             detalle: formGasto.detalle,
             importe: Number(formGasto.importe),
@@ -220,8 +220,8 @@ function Caja() {
             if (formGasto.id) {
                 const { error } = await supabase
                     .from('bd_caja_gastos')
-                    .update(dataToSave) 
-                    .eq('id', formGasto.id); 
+                    .update(dataToSave)
+                    .eq('id', formGasto.id);
 
                 if (error) throw error;
             } else {
@@ -231,7 +231,7 @@ function Caja() {
 
                 if (error) throw error;
             }
-            
+
             setVista('listado');
             cargarDatos();
         } catch (err) {
@@ -384,8 +384,8 @@ function Caja() {
                                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                         <thead>
                                             <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
-                                                <th style={s.th}>Fecha</th><th style={s.th}>Detalle del Gasto</th><th style={s.th}>Categoría / Tipo</th>
-                                                <th style={s.th}>Proveedor / Forma Pago</th><th style={{ ...s.th, textAlign: 'right' }}>Importe</th>
+                                                <th style={s.th}>Fecha</th><th style={s.th}>Detalle del Gasto</th><th style={s.th}>Categoría  Tipo</th>
+                                                <th style={s.th}>Proveedor  Forma Pago</th><th style={{ ...s.th, textAlign: 'right' }}>Importe</th>
                                                 <th style={{ ...s.th, textAlign: 'center' }}>Acciones</th>
                                             </tr>
                                         </thead>
@@ -394,19 +394,39 @@ function Caja() {
                                                 <tr key={g.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                                     <td style={s.td}>{new Date(g.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</td>
                                                     <td style={s.td}><b>{g.detalle}</b></td>
-                                                    <td style={s.td}>{g.categoria} <br /><small style={{ color: '#64748b' }}>{g.tipo}</small></td>
-                                                    {/* 🌟 MUESTRA EL NOMBRE DEL PROVEEDOR RELACIONAL CRUZANDO EL ID */}
-                                                    <td style={s.td}>{getNombreProveedor(g.id_proveedor)} <br /><small style={{ color: '#64748b' }}>{g.medio_pago}</small></td>
+                                                    <td style={s.td}>
+                                                        {g.categoria} <br />
+                                                        <small style={{
+                                                            color: g.tipo === 'FIJO' ? '#dc2626' : '#2c3d35',
+                                                            fontWeight: 'bold'
+                                                        }}>
+                                                            {g.tipo}
+                                                        </small>
+                                                    </td>
+
+                                                    <td style={s.td}>
+                                                        {/* Acá va el nombre del destino o proveedor, dejalo como lo tenías */}
+                                                        {g.destino || getNombreProveedor(g.id_proveedor)} <br />
+
+                                                        <small style={{
+                                                            color: g.medio_pago === 'EFECTIVO' ? '#16a34a' :  /* Verde si es Efectivo */
+                                                                g.medio_pago === 'CUENTA' ? '#2563eb' :  /* Azul si es Cuenta */
+                                                                    '#d97706',                                 /* Naranja si es Otro */
+                                                            fontWeight: 'bold'
+                                                        }}>
+                                                            {g.medio_pago}
+                                                        </small>
+                                                    </td>
                                                     <td style={{ ...s.td, textAlign: 'right', fontWeight: 'bold', color: '#ef4444' }}>
                                                         {g.moneda === 'DOLAR' ? 'U$S' : '$'} {formatDinero(g.importe)}
                                                     </td>
                                                     <td style={{ ...s.td, textAlign: 'center' }}>
-                                                        <span style={{ cursor: 'pointer', marginRight: '15px' }} onClick={() => { 
-                                                            setFormGasto(g); 
-                                                            // Cargamos el texto correspondiente al proveedor relacional en el input
+                                                        <span style={{ cursor: 'pointer', marginRight: '15px' }} onClick={() => {
+                                                            setFormGasto(g);
+
                                                             const p = proveedores.find(prov => prov.id === g.id_proveedor);
                                                             setBusquedaProveedor(p ? p.nombre : '');
-                                                            setVista('crearGasto'); 
+                                                            setVista('crearGasto');
                                                         }}>✏️</span>
                                                         <span style={{ cursor: 'pointer', color: '#dc2626' }} onClick={() => { if (window.confirm('¿Eliminar gasto?')) supabase.from('bd_caja_gastos').delete().eq('id', g.id).then(cargarDatos); }}>🗑️</span>
                                                     </td>
@@ -450,7 +470,7 @@ function Caja() {
                                     ))}
                                 </select>
                             </div>
-                            
+
                             <div style={{ gridColumn: 'span 2' }}><label style={s.label}>Detalle</label><input type="text" style={s.input} value={formIngreso.detalle || ''} onChange={e => setFormIngreso({ ...formIngreso, detalle: e.target.value })} /></div>
 
                             <div>
@@ -497,7 +517,7 @@ function Caja() {
                             <div><label style={s.label}>Moneda</label><select style={s.input} value={formGasto.moneda} onChange={e => setFormGasto({ ...formGasto, moneda: e.target.value })}><option>PESO</option><option>DOLAR</option></select></div>
 
                             <div style={{ gridColumn: 'span 2' }}><label style={s.label}>Detalle del gasto</label><input type="text" style={s.input} value={formGasto.detalle || ''} onChange={e => setFormGasto({ ...formGasto, detalle: e.target.value })} placeholder="Ej: Juego de aros..." /></div>
-                            
+
                             {/* 🌟 REEMPLAZO COMPLETO POR EL NUEVO BUSCADOR PREDICTIVO RELACIONAL */}
                             <div>
                                 <label style={s.label}>Proveedor / Destino *</label>
@@ -508,8 +528,8 @@ function Caja() {
                                 <label style={s.label}>Categoría</label>
                                 <select
                                     style={s.input}
-                                    value={formGasto.categoria || ""} 
-                                    onChange={e => setFormGasto({ ...formGasto, categoria: e.target.value })} 
+                                    value={formGasto.categoria || ""}
+                                    onChange={e => setFormGasto({ ...formGasto, categoria: e.target.value })}
                                 >
                                     <option value="">Seleccionar...</option>
                                     <option value="Servicios">Servicios</option>

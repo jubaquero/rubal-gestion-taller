@@ -10,7 +10,7 @@ function Trabajos() {
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
   const [vista, setVista] = useState('listado');
   const [cargando, setCargando] = useState(true);
-const [filtroAño, setFiltroAño] = useState('TODOS');
+  const [filtroAño, setFiltroAño] = useState('TODOS');
 
   // Estados Edición y Visualización
   const [trabajoActivo, setTrabajoActivo] = useState(null);
@@ -260,9 +260,9 @@ const [filtroAño, setFiltroAño] = useState('TODOS');
     return `${partes[2]}/${partes[1]}/${partes[0]}`;
   };
 
-const filtrarTrabajos = trabajos.filter(t => {
+  const filtrarTrabajos = trabajos.filter(t => {
     const coincideEstado = filtroEstado === 'TODOS' || (filtroEstado === 'PENDIENTE' && t.estado !== 'TERMINADO') || (filtroEstado === 'TERMINADO' && t.estado === 'TERMINADO');
-    
+
     // Nueva lógica de año
     const añoTrabajo = t.fecha_inicio ? new Date(t.fecha_inicio).getFullYear().toString() : '';
     const coincideAño = filtroAño === 'TODOS' || añoTrabajo === filtroAño;
@@ -271,7 +271,7 @@ const filtrarTrabajos = trabajos.filter(t => {
     const strId = t.id.toString();
     const strCliente = `${t.bd_clientes?.nombre || ''} ${t.bd_clientes?.apellido || ''}`.toLowerCase();
     const strServicio = (t.bd_nomenclador?.descripcion || '').toLowerCase();
-    
+
     return coincideEstado && coincideAño && (strId.includes(term) || strCliente.includes(term) || strServicio.includes(term));
   });
 
@@ -523,7 +523,7 @@ const filtrarTrabajos = trabajos.filter(t => {
   };
 
   // Extrae años únicos de la fecha_inicio y los ordena
-  const añosDisponibles = [...new Set(trabajos.map(t => 
+  const añosDisponibles = [...new Set(trabajos.map(t =>
     t.fecha_inicio ? new Date(t.fecha_inicio).getFullYear().toString() : null
   ))].filter(Boolean).sort().reverse();
 
@@ -590,25 +590,30 @@ const filtrarTrabajos = trabajos.filter(t => {
               }}>+ Nuevo Trabajo</button>
             </div>
 
+<div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '20px', background: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Estado:</span>
               {['TODOS', 'PENDIENTE', 'TERMINADO'].map(op => <button key={op} style={s.pill(filtroEstado === op)} onClick={() => setFiltroEstado(op)}>{op}</button>)}
             </div>
 
-<div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+{/* Separador visual */}
+                            <div style={{ width: '1px', background: '#cbd5e1' }}></div>
+                            
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
               <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Año:</span>
               <button style={s.pill(filtroAño === 'TODOS')} onClick={() => setFiltroAño('TODOS')}>TODOS</button>
               {añosDisponibles.map(anio => (
-                <button 
-                  key={anio} 
-                  style={s.pill(filtroAño === anio)} 
+                <button
+                  key={anio}
+                  style={s.pill(filtroAño === anio)}
                   onClick={() => setFiltroAño(anio)}
                 >
                   {anio}
                 </button>
               ))}
             </div>
-
+  </div>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>

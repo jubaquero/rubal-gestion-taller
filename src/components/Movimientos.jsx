@@ -87,7 +87,8 @@ const [almacenesDelProducto, setAlmacenesDelProducto] = useState([]);
             .from('bd_productos')
             .select('*, bd_marcas(nombre)')
             .eq('id_tipo_producto', tipoSeleccionado)
-            .order('codigo');
+            //.order('codigo');
+            .order('id');
         setProductosDB(data || []);
         setProductos(data || []);
     };
@@ -183,7 +184,7 @@ const [almacenesDelProducto, setAlmacenesDelProducto] = useState([]);
     return (
         <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
             <div style={s.card}>
-                <h2>🔄 Registro y Auditoría de Movimientos</h2>
+                <h2>🔄 Historial de Movimientos</h2>
 
                 {/* BARRA SUPERIOR DE SELECTOR Y BUSQUEDA */}
                 <div style={s.topBar}>
