@@ -10,6 +10,7 @@ function Trabajos() {
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
   const [vista, setVista] = useState('listado');
   const [cargando, setCargando] = useState(true);
+const [filtroAño, setFiltroAño] = useState('TODOS');
 
   // Estados Edición y Visualización
   const [trabajoActivo, setTrabajoActivo] = useState(null);
@@ -259,13 +260,19 @@ function Trabajos() {
     return `${partes[2]}/${partes[1]}/${partes[0]}`;
   };
 
-  const filtrarTrabajos = trabajos.filter(t => {
+const filtrarTrabajos = trabajos.filter(t => {
     const coincideEstado = filtroEstado === 'TODOS' || (filtroEstado === 'PENDIENTE' && t.estado !== 'TERMINADO') || (filtroEstado === 'TERMINADO' && t.estado === 'TERMINADO');
+    
+    // Nueva lógica de año
+    const añoTrabajo = t.fecha_inicio ? new Date(t.fecha_inicio).getFullYear().toString() : '';
+    const coincideAño = filtroAño === 'TODOS' || añoTrabajo === filtroAño;
+
     const term = busqueda.toLowerCase();
     const strId = t.id.toString();
     const strCliente = `${t.bd_clientes?.nombre || ''} ${t.bd_clientes?.apellido || ''}`.toLowerCase();
     const strServicio = (t.bd_nomenclador?.descripcion || '').toLowerCase();
-    return coincideEstado && (strId.includes(term) || strCliente.includes(term) || strServicio.includes(term));
+    
+    return coincideEstado && coincideAño && (strId.includes(term) || strCliente.includes(term) || strServicio.includes(term));
   });
 
   const handleCrearTrabajo = async (e) => {
@@ -515,6 +522,11 @@ function Trabajos() {
     ventanaImpresion.document.close();
   };
 
+  // Extrae años únicos de la fecha_inicio y los ordena
+  const añosDisponibles = [...new Set(trabajos.map(t => 
+    t.fecha_inicio ? new Date(t.fecha_inicio).getFullYear().toString() : null
+  ))].filter(Boolean).sort().reverse();
+
   return (
     <div style={{ padding: '20px' }}>
       {/* AÑADE ESTE BLOQUE CSS AQUÍ */}
@@ -579,7 +591,22 @@ function Trabajos() {
             </div>
 
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Estado:</span>
               {['TODOS', 'PENDIENTE', 'TERMINADO'].map(op => <button key={op} style={s.pill(filtroEstado === op)} onClick={() => setFiltroEstado(op)}>{op}</button>)}
+            </div>
+
+<div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Año:</span>
+              <button style={s.pill(filtroAño === 'TODOS')} onClick={() => setFiltroAño('TODOS')}>TODOS</button>
+              {añosDisponibles.map(anio => (
+                <button 
+                  key={anio} 
+                  style={s.pill(filtroAño === anio)} 
+                  onClick={() => setFiltroAño(anio)}
+                >
+                  {anio}
+                </button>
+              ))}
             </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -603,7 +630,7 @@ function Trabajos() {
                     <td style={s.td}>{formatearFecha(t.fecha_inicio)}</td>
                     <td style={s.td}>{t.fecha_fin ? formatearFecha(t.fecha_fin) : <span style={{ color: '#94a3b8' }}></span>}</td>
                     <td style={s.td}>
-                      <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', backgroundColor: t.estado === 'TERMINADO' ? '#dcfce7' : '#f1f5f9', color: t.estado === 'TERMINADO' ? '#16a34a' : '#475569' }}>{t.estado}</span>
+                      <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', backgroundColor: t.estado === 'TERMINADO' ? '#dcfce7' : '#f1f5f9', color: t.estado === 'TERMINADO' ? '#16a34a' : '#ec5628' }}>{t.estado}</span>
                     </td>
                     <td style={{ ...s.td, textAlign: 'center' }}>
                       <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
