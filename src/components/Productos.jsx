@@ -113,26 +113,53 @@ function Productos() {
   };
 
 const guardarProducto = async () => {
+    // 1. Desestructuramos
     const { bd_tipos_producto, bd_marcas, ...datosAGuardar } = form;
 
+    // 2. Limpieza de datos antes de enviar
+    // Convertimos a null si el valor es un string vacío, o a número si tiene valor
+    const limpiarDato = (valor) => (valor === "" || valor === undefined ? null : Number(valor));
+
+    const datosFinales = {
+        ...datosAGuardar,
+        id_tipo_producto: limpiarDato(datosAGuardar.id_tipo_producto),
+        id_marca: limpiarDato(datosAGuardar.id_marca),
+        stock_actual: limpiarDato(datosAGuardar.stock_actual) || 0,
+        // Eliminamos el ID para que no entre en el cuerpo del PATCH (Error 400 anterior)
+        id: undefined 
+    };
+
+    // Eliminamos la propiedad id del objeto para el update
+    delete datosFinales.id; 
+
     if (datosAGuardar.id) {
-      await supabase.from('bd_productos').update(datosAGuardar).eq('id', datosAGuardar.id);
+        // ACTUALIZACIÓN
+        const { error } = await supabase
+            .from('bd_productos')
+            .update(datosFinales)
+            .eq('id', datosAGuardar.id);
+        
+        if (error) console.error("Error al actualizar:", error);
     } else {
-      await supabase.from('bd_productos').insert([datosAGuardar]);
-      const tipo = tipos.find(t => t.id == datosAGuardar.id_tipo_producto);
-      if (tipo) {
-        await supabase.from('bd_tipos_producto').update({ ultimo_numero: tipo.ultimo_numero + 1 }).eq('id', tipo.id);
-      }
+        // CREACIÓN
+        const { error } = await supabase
+            .from('bd_productos')
+            .insert([datosFinales]);
+        
+        if (error) console.error("Error al insertar:", error);
+        
+        const tipo = tipos.find(t => t.id == datosAGuardar.id_tipo_producto);
+        if (tipo) {
+            await supabase.from('bd_tipos_producto').update({ ultimo_numero: tipo.ultimo_numero + 1 }).eq('id', tipo.id);
+        }
     }
     
-    // 🌟 AQUÍ ESTÁ EL CAMBIO CLAVE 🌟
-    setForm({}); // <--- Vaciamos por completo el objeto del formulario para que no quede "sucio"
-    setFiltroTipo('TODOS'); // Opcional: resetea el filtro si querés ver todo el catálogo fresco
-    
+    setForm({});
+    setFiltroTipo('TODOS');
     setVista('listado');
     fetchProductos();
-    fetchTipos(); // <--- Volvemos a traer los tipos para tener el 'ultimo_numero' actualizado al instante
-  };
+    fetchTipos();
+};
 
   const eliminarProducto = async (p) => {
     const { data: movs } = await supabase.from('bd_movimientos').select('id').eq('id_producto', p.id).limit(1);
