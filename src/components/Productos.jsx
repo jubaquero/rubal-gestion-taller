@@ -171,7 +171,7 @@ const guardarProducto = async () => {
           <h2>📦 Gestión de Repuestos y Productos</h2>
 
           <div style={s.topBar}>
-            {/* SELECTOR DE TIPO */}
+
             <select 
               value={filtroTipo} 
               onChange={(e) => setFiltroTipo(e.target.value)}
@@ -191,7 +191,7 @@ const guardarProducto = async () => {
               style={s.inputBusqueda}
             />
 
-            {/* BOTÓN NUEVO CORREGIDO: Resetea el formulario por completo */}
+       
             <div style={{ marginLeft: 'auto' }}>
                 <button 
                   style={s.btnPrincipal} 
@@ -215,7 +215,7 @@ const guardarProducto = async () => {
             </div>
           )}
 
-          {/* TABLA PRINCIPAL CORREGIDA Y ACTUALIZADA */}
+     
           <table style={s.tabla}>
             <thead>
               <tr>
@@ -223,7 +223,7 @@ const guardarProducto = async () => {
                 <th style={{ ...s.th, width: '18%' }}>Categoría</th>
                 <th style={{ ...s.th, width: '18%' }}>Modelo</th>
                 <th style={{ ...s.th, width: '14%' }}>Marca</th>
-                <th style={{ ...s.th, width: '16%' }}>Cód. Fab</th> {/* 🌟 NUEVA COLUMNA */}
+                <th style={{ ...s.th, width: '16%' }}>Cód. Fab</th> 
                 <th style={{ ...s.th, width: '10%' }}>Medida</th>
                 <th style={{ ...s.th, width: '6%', textAlign: 'center' }}>Stock</th>
                 <th style={{ ...s.th, width: '12%', textAlign: 'center' }}>Acciones</th>
@@ -239,7 +239,7 @@ const guardarProducto = async () => {
                     <td style={s.td} title={p.bd_tipos_producto?.nombre}>{p.bd_tipos_producto?.nombre || '-'}</td>
                     <td style={s.td} title={p.modelo_auto}>{p.modelo_auto || '-'}</td>
                     <td style={s.td} title={p.bd_marcas?.nombre}>{p.bd_marcas?.nombre || '-'}</td>
-                    <td style={s.td} title={p.codigo_fabricante}>{p.codigo_fabricante || '-'}</td> {/* 🌟 MUESTRA CÓDIGO FÁBRICA */}
+                    <td style={s.td} title={p.codigo_fabricante}>{p.codigo_fabricante || '-'}</td> 
                     <td style={s.td} title={p.medida}>{p.medida || '-'}</td>
 
                     <td style={{ ...s.td, textAlign: 'center', fontWeight: 'bold', color: (p.stock_actual || 0) > 0 ? '#16a34a' : '#dc2626' }}>
