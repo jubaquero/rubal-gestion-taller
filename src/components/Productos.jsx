@@ -23,10 +23,10 @@ function Productos() {
     btnSecundario: { background: '#64748b', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', marginLeft: '10px' },
 
     // Mejoras de ancho y distribución en la tabla
-    tabla: { width: '100%', borderCollapse: 'collapse', marginTop: '10px', tableLayout: 'fixed', fontSize: '0.95rem' }, 
+    tabla: { width: '100%', borderCollapse: 'collapse', marginTop: '10px', tableLayout: 'fixed', fontSize: '0.95rem' },
     th: { background: '#f1f5f9', padding: '12px', textAlign: 'left', borderBottom: '2px solid #e2e8f0', fontWeight: 'bold', color: '#1e293b' },
     tr: { borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' },
-    td: { padding: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }, 
+    td: { padding: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
     acciones: { display: 'flex', gap: '14px', alignItems: 'center' },
 
     formFila: { display: 'flex', alignItems: 'center', marginBottom: '15px' },
@@ -95,8 +95,21 @@ function Productos() {
     setProductosDB(todosLosProductos);
   };
 
-  const fetchTipos = async () => { const { data } = await supabase.from('bd_tipos_producto').select('*'); setTipos(data || []); };
-  const fetchMarcas = async () => { const { data } = await supabase.from('bd_marcas').select('*'); setMarcas(data || []); };
+  const fetchTipos = async () => {
+    const { data } = await supabase
+      .from('bd_tipos_producto')
+      .select('*')
+      .order('nombre', { ascending: true }); 
+    setTipos(data || []);
+  };
+
+  const fetchMarcas = async () => {
+    const { data } = await supabase
+      .from('bd_marcas')
+      .select('*')
+      .order('nombre', { ascending: true }); 
+    setMarcas(data || []);
+  };
 
   const iniciarNuevoProducto = (idTipo) => {
     if (!idTipo) return;
@@ -112,21 +125,21 @@ function Productos() {
     }
   };
 
-const guardarProducto = async () => {
+  const guardarProducto = async () => {
     // 1. Desestructuramos
     const { bd_tipos_producto, bd_marcas, ...datosAGuardar } = form;
 
     // 2. CORRECCIÓN: Limpieza profunda de los IDs
     // Convertimos a null si es un string vacío o un 0, para evitar el error de foreign key
     const datosFinales = {
-        ...datosAGuardar,
-        id_tipo_producto: (datosAGuardar.id_tipo_producto && datosAGuardar.id_tipo_producto !== 0) 
-                          ? Number(datosAGuardar.id_tipo_producto) 
-                          : null,
-        id_marca: (datosAGuardar.id_marca && datosAGuardar.id_marca !== 0 && datosAGuardar.id_marca !== "") 
-                  ? Number(datosAGuardar.id_marca) 
-                  : null,
-        stock_actual: Number(datosAGuardar.stock_actual || 0)
+      ...datosAGuardar,
+      id_tipo_producto: (datosAGuardar.id_tipo_producto && datosAGuardar.id_tipo_producto !== 0)
+        ? Number(datosAGuardar.id_tipo_producto)
+        : null,
+      id_marca: (datosAGuardar.id_marca && datosAGuardar.id_marca !== 0 && datosAGuardar.id_marca !== "")
+        ? Number(datosAGuardar.id_marca)
+        : null,
+      stock_actual: Number(datosAGuardar.stock_actual || 0)
     };
 
     // 3. Eliminamos el ID del objeto para el update
@@ -134,39 +147,39 @@ const guardarProducto = async () => {
     delete datosFinales.id;
 
     if (idProducto) {
-        // ACTUALIZACIÓN
-        const { error } = await supabase
-            .from('bd_productos')
-            .update(datosFinales)
-            .eq('id', idProducto);
-        
-        if (error) {
-            console.error("Error al actualizar:", error);
-            alert("Error al actualizar: " + error.message);
-        }
+      // ACTUALIZACIÓN
+      const { error } = await supabase
+        .from('bd_productos')
+        .update(datosFinales)
+        .eq('id', idProducto);
+
+      if (error) {
+        console.error("Error al actualizar:", error);
+        alert("Error al actualizar: " + error.message);
+      }
     } else {
-        // CREACIÓN
-        const { error } = await supabase
-            .from('bd_productos')
-            .insert([datosFinales]);
-        
-        if (error) {
-            console.error("Error al insertar:", error);
-            alert("Error al insertar: " + error.message);
-        } else {
-            const tipo = tipos.find(t => t.id == datosFinales.id_tipo_producto);
-            if (tipo) {
-                await supabase.from('bd_tipos_producto').update({ ultimo_numero: tipo.ultimo_numero + 1 }).eq('id', tipo.id);
-            }
+      // CREACIÓN
+      const { error } = await supabase
+        .from('bd_productos')
+        .insert([datosFinales]);
+
+      if (error) {
+        console.error("Error al insertar:", error);
+        alert("Error al insertar: " + error.message);
+      } else {
+        const tipo = tipos.find(t => t.id == datosFinales.id_tipo_producto);
+        if (tipo) {
+          await supabase.from('bd_tipos_producto').update({ ultimo_numero: tipo.ultimo_numero + 1 }).eq('id', tipo.id);
         }
+      }
     }
-    
+
     setForm({});
     setFiltroTipo('TODOS');
     setVista('listado');
     fetchProductos();
     fetchTipos();
-};
+  };
   const eliminarProducto = async (p) => {
     const { data: movs } = await supabase.from('bd_movimientos').select('id').eq('id_producto', p.id).limit(1);
     const { data: trabs } = await supabase.from('bd_trabajos_p').select('id').eq('id_producto', p.id).limit(1);
@@ -205,8 +218,8 @@ const guardarProducto = async () => {
 
           <div style={s.topBar}>
 
-            <select 
-              value={filtroTipo} 
+            <select
+              value={filtroTipo}
               onChange={(e) => setFiltroTipo(e.target.value)}
               style={{ ...s.inputBusqueda, width: '200px', background: '#f8fafc', fontWeight: 'bold' }}
             >
@@ -224,17 +237,17 @@ const guardarProducto = async () => {
               style={s.inputBusqueda}
             />
 
-       
+
             <div style={{ marginLeft: 'auto' }}>
-                <button 
-                  style={s.btnPrincipal} 
-                  onClick={() => {
-                    setForm({}); // <--- SOLUCIÓN: Limpia el objeto viejo para que no arrastre IDs sucios
-                    setMostrarSelectorTipo(!mostrarSelectorTipo);
-                  }}
-                >
-                  {mostrarSelectorTipo ? '❌ Cancelar' : '➕ Nuevo Producto'}
-                </button>
+              <button
+                style={s.btnPrincipal}
+                onClick={() => {
+                  setForm({}); // <--- SOLUCIÓN: Limpia el objeto viejo para que no arrastre IDs sucios
+                  setMostrarSelectorTipo(!mostrarSelectorTipo);
+                }}
+              >
+                {mostrarSelectorTipo ? '❌ Cancelar' : '➕ Nuevo Producto'}
+              </button>
             </div>
           </div>
 
@@ -248,7 +261,7 @@ const guardarProducto = async () => {
             </div>
           )}
 
-     
+
           <table style={s.tabla}>
             <thead>
               <tr>
@@ -256,7 +269,7 @@ const guardarProducto = async () => {
                 <th style={{ ...s.th, width: '18%' }}>Categoría</th>
                 <th style={{ ...s.th, width: '18%' }}>Modelo</th>
                 <th style={{ ...s.th, width: '14%' }}>Marca</th>
-                <th style={{ ...s.th, width: '16%' }}>Cód. Fab</th> 
+                <th style={{ ...s.th, width: '16%' }}>Cód. Fab</th>
                 <th style={{ ...s.th, width: '10%' }}>Medida</th>
                 <th style={{ ...s.th, width: '6%', textAlign: 'center' }}>Stock</th>
                 <th style={{ ...s.th, width: '12%', textAlign: 'center' }}>Acciones</th>
@@ -272,7 +285,7 @@ const guardarProducto = async () => {
                     <td style={s.td} title={p.bd_tipos_producto?.nombre}>{p.bd_tipos_producto?.nombre || '-'}</td>
                     <td style={s.td} title={p.modelo_auto}>{p.modelo_auto || '-'}</td>
                     <td style={s.td} title={p.bd_marcas?.nombre}>{p.bd_marcas?.nombre || '-'}</td>
-                    <td style={s.td} title={p.codigo_fabricante}>{p.codigo_fabricante || '-'}</td> 
+                    <td style={s.td} title={p.codigo_fabricante}>{p.codigo_fabricante || '-'}</td>
                     <td style={s.td} title={p.medida}>{p.medida || '-'}</td>
 
                     <td style={{ ...s.td, textAlign: 'center', fontWeight: 'bold', color: (p.stock_actual || 0) > 0 ? '#16a34a' : '#dc2626' }}>
