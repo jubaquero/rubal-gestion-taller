@@ -100,38 +100,40 @@ function Dashboard_Presupuestos() {
     return (
         <div style={{ padding: '25px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', background: '#fff', padding: '20px', borderRadius: '12px' }}>
-                <h2 style={{ margin: 0 }}>📊 Presupuestos {anio}</h2>
+                <h2 style={{ margin: 0 }}>📊 Indicadores Año: {anio}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1e293b' }}>Año:</span>
                 <select value={anio} onChange={(e) => setAnio(e.target.value)} style={{ padding: '10px', borderRadius: '8px', fontSize: '1.1rem' }}>
-                    {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+                    {[2024, 2025, 2026, 2027, 2028].map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
             </div>
-
+</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '30px' }}>
 
                 <div style={cardStyle('#000000')}> {/* Verde */}
                     <div style={{ flex: 1 }}>
-                        <h4 style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '1rem' }}>Total $ (Aprobados)</h4>
+                        <h4 style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '1rem' }}>Total $ (Presupuestado)</h4>
                         <p style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', color: '#1e293b' }}>${kpis.totalFacturado.toLocaleString()}</p>
                     </div>
                 </div>
 
                 <div style={cardStyle('#d8bc3e')}> {/* Azul */}
                     <div style={{ flex: 1 }}>
-                        <h4 style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '1rem' }}>Total Mano de Obra</h4>
+                        <h4 style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '1rem' }}>Total $ (Mano de Obra)</h4>
                         <p style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', color: '#1e293b' }}>${kpis.totalMO.toLocaleString()}</p>
                     </div>
                 </div>
 
                 <div style={cardStyle('#ea0808')}> {/* Amarillo */}
                     <div style={{ flex: 1 }}>
-                        <h4 style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '1rem' }}>Bonificaciones</h4>
+                        <h4 style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '1rem' }}>Descuentos $</h4>
                         <p style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', color: '#1e293b' }}>-${kpis.totalBonif.toLocaleString()}</p>
                     </div>
                 </div>
 
                 <div style={cardStyle('#6bb838')}> {/* Gris */}
                     <div style={{ flex: 1 }}>
-                        <h4 style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '1rem' }}>Aprobados</h4>
+                        <h4 style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '1rem' }}>Presupuestos Aprobados</h4>
                         <p style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', color: '#1e293b' }}>{kpis.cantidad} </p>
                     </div>
                 </div>

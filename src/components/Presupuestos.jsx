@@ -14,7 +14,7 @@ function Presupuestos() {
     const [filtroEstado, setFiltroEstado] = useState('TODOS');
     const [filtroAño, setFiltroAño] = useState('TODOS');
     const [cargando, setCargando] = useState(true);
-const [tiposUnicos, setTiposUnicos] = useState([]);
+    const [tiposUnicos, setTiposUnicos] = useState([]);
 
     // Cabecera del Presupuesto
     const [presupuestoActivo, setPresupuestoActivo] = useState(null);
@@ -206,9 +206,9 @@ const [tiposUnicos, setTiposUnicos] = useState([]);
         setTipoMotor(p.bd_nomenclador?.tipo || '');
         setIdNomenclador(p.id_nomenclador);
         setMotorSeleccionado(p.bd_nomenclador);
-        setBusquedaMotor(p.bd_nomenclador?.descripcion || ''); 
-        setDescTrabajo(p.descripcion_trabajo || ''); 
-setEstadoPresupuesto(p.estado || 'PENDIENTE');
+        setBusquedaMotor(p.bd_nomenclador?.descripcion || '');
+        setDescTrabajo(p.descripcion_trabajo || '');
+        setEstadoPresupuesto(p.estado || 'PENDIENTE');
         setDescuento(p.descuento_porcentaje || 0);
         setDescuentoMO(p.descuento_porcentaje_mo || 0);
 
@@ -353,57 +353,57 @@ setEstadoPresupuesto(p.estado || 'PENDIENTE');
         return () => clearTimeout(timeoutId);
     }, [busquedaMO]);
 
-const cargarDatos = async () => {
-    setCargando(true);
-    // Quitamos bn de la carga inicial
-    const [bp, bc] = await Promise.all([
-        supabase.from('bd_presupuestos').select('*, bd_clientes(*), bd_nomenclador(*)').order('id', { ascending: false }),
-        supabase.from('bd_clientes').select('*').order('nombre')
-    ]);
-    if (bp.data) setPresupuestos(bp.data);
-    if (bc.data) setClientes(bc.data);
-    setCargando(false);
-};
-
-// BUSCADOR PREDICTIVO EN VIVO PARA MOTORES (Consultando al servidor)
-useEffect(() => {
-    const buscarMotorEnServidor = async () => {
-        if (busquedaMotor.length < 2) {
-            setMotoresSugeridos([]);
-            return;
-        }
-
-        let query = supabase
-            .from('bd_nomenclador')
-            .select('*')
-            .ilike('descripcion', `%${busquedaMotor}%`)
-            .limit(20); // Traemos solo 20 resultados para ser rápidos
-
-        // Si el usuario seleccionó un "Tipo", lo aplicamos como filtro
-        if (tipoMotor) {
-            query = query.eq('tipo', tipoMotor);
-        }
-
-        const { data, error } = await query;
-        if (!error) setMotoresSugeridos(data || []);
+    const cargarDatos = async () => {
+        setCargando(true);
+        // Quitamos bn de la carga inicial
+        const [bp, bc] = await Promise.all([
+            supabase.from('bd_presupuestos').select('*, bd_clientes(*), bd_nomenclador(*)').order('id', { ascending: false }),
+            supabase.from('bd_clientes').select('*').order('nombre')
+        ]);
+        if (bp.data) setPresupuestos(bp.data);
+        if (bc.data) setClientes(bc.data);
+        setCargando(false);
     };
 
-    const timeoutId = setTimeout(buscarMotorEnServidor, 300);
-    return () => clearTimeout(timeoutId);
-}, [busquedaMotor, tipoMotor]); // Se ejecuta al escribir o cambiar el tipo
+    // BUSCADOR PREDICTIVO EN VIVO PARA MOTORES (Consultando al servidor)
+    useEffect(() => {
+        const buscarMotorEnServidor = async () => {
+            if (busquedaMotor.length < 2) {
+                setMotoresSugeridos([]);
+                return;
+            }
+
+            let query = supabase
+                .from('bd_nomenclador')
+                .select('*')
+                .ilike('descripcion', `%${busquedaMotor}%`)
+                .limit(20); // Traemos solo 20 resultados para ser rápidos
+
+            // Si el usuario seleccionó un "Tipo", lo aplicamos como filtro
+            if (tipoMotor) {
+                query = query.eq('tipo', tipoMotor);
+            }
+
+            const { data, error } = await query;
+            if (!error) setMotoresSugeridos(data || []);
+        };
+
+        const timeoutId = setTimeout(buscarMotorEnServidor, 300);
+        return () => clearTimeout(timeoutId);
+    }, [busquedaMotor, tipoMotor]); // Se ejecuta al escribir o cambiar el tipo
 
 
-useEffect(() => {
-    const obtenerTipos = async () => {
-        const { data } = await supabase.from('bd_nomenclador').select('tipo').order('tipo');
-        if (data) {
-            // Filtramos duplicados y valores vacíos
-            const unicos = [...new Set(data.map(n => n.tipo))].filter(Boolean);
-            setTiposUnicos(unicos); // Ahora esto funcionará porque declaraste el estado en el paso 1
-        }
-    };
-    obtenerTipos();
-}, []);
+    useEffect(() => {
+        const obtenerTipos = async () => {
+            const { data } = await supabase.from('bd_nomenclador').select('tipo').order('tipo');
+            if (data) {
+                // Filtramos duplicados y valores vacíos
+                const unicos = [...new Set(data.map(n => n.tipo))].filter(Boolean);
+                setTiposUnicos(unicos); // Ahora esto funcionará porque declaraste el estado en el paso 1
+            }
+        };
+        obtenerTipos();
+    }, []);
 
 
     // Manejo del cambio de Motor/Tapa para deducir categoría y tipo automáticamente
@@ -695,6 +695,12 @@ useEffect(() => {
         }
     };
 
+const formatDinero = (num) => {
+    return new Intl.NumberFormat('es-AR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Number(num || 0));
+};
     return (
         <div style={{ padding: '20px' }}>
             <div style={s.card}>
@@ -788,14 +794,14 @@ useEffect(() => {
                     </>
                 )}
 
-                {/* --- VISTA COMPLETA DE CARGA --- */}
+{/* --- VISTA COMPLETA DE CARGA --- */}
                 {(vista === 'nuevo' || vista === 'editar') && (
                     <div>
-<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '10px', alignItems: 'center' }}>
-                            
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '10px', alignItems: 'center' }}>
+
                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                 <h2 style={{ margin: 0 }}>{vista === 'nuevo' ? '✨ Creación de Presupuesto' : `✏️ Editar Presupuesto #${presupuestoActivo?.id}`}</h2>
-                                
+
                                 {/* SELECTOR DE ESTADO CON COLORES DINÁMICOS */}
                                 <select 
                                     style={{ 
@@ -863,14 +869,14 @@ useEffect(() => {
                             {/* --- FILA 2: DATOS DEL MOTOR / NOMENCLADOR --- */}
                             <div>
                                 <label style={s.lbl}>Tipo Componente *</label>
-<select style={s.input} value={tipoMotor} onChange={e => {
-    setTipoMotor(e.target.value);
-    setBusquedaMotor(''); // Al cambiar de tipo, limpiamos el buscador de motores
-    setMotorSeleccionado(null);
-}}>
-    <option value="">-- Seleccionar Tipo --</option>
-    {tiposUnicos.map(t => <option key={t} value={t}>{t}</option>)}
-</select>
+                                <select style={s.input} value={tipoMotor} onChange={e => {
+                                    setTipoMotor(e.target.value);
+                                    setBusquedaMotor(''); // Al cambiar de tipo, limpiamos el buscador de motores
+                                    setMotorSeleccionado(null);
+                                }}>
+                                    <option value="">-- Seleccionar Tipo --</option>
+                                    {tiposUnicos.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
                             </div>
 
                             {/* El buscador de modelo ocupa 2 columnas completas para dar espacio al texto fierrero largo */}
@@ -988,7 +994,7 @@ useEffect(() => {
                                             <tr key={item.id_temp} style={{ borderBottom: '1px solid #e2e8f0' }}>
                                                 <td style={{ padding: '10px 8px' }}>{item.descripcion_servicio}</td>
 
-                                                {/* CELDA CANTIDAD DINÁMICA (Si está editando muestra un input chico) */}
+                                                {/* CELDA CANTIDAD DINÁMICA */}
                                                 <td style={{ padding: '10px 8px', textAlign: 'center' }}>
                                                     {idMOEditando === item.id_temp ? (
                                                         <input
@@ -1004,10 +1010,10 @@ useEffect(() => {
                                                 </td>
 
                                                 <td style={{ padding: '10px 8px', textAlign: 'center' }}>{(item.factor || 1).toFixed(2)}</td>
-                                                <td style={{ padding: '10px 8px', textAlign: 'right' }}>${item.precio_unitario}</td>
-                                                <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 'bold' }}>${item.precio_total}</td>
+                                                <td style={{ padding: '10px 8px', textAlign: 'right' }}>${formatDinero(item.precio_unitario)}</td>
+                                                <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 'bold' }}>${formatDinero(item.precio_total)}</td>
 
-                                                {/* ACCIONES DINÁMICAS (Lápiz/Tacho o Guardar/Cancelar) */}
+                                                {/* ACCIONES DINÁMICAS */}
                                                 <td style={{ padding: '10px 8px', textAlign: 'center', fontSize: '1.1rem' }}>
                                                     {idMOEditando === item.id_temp ? (
                                                         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
@@ -1046,7 +1052,7 @@ useEffect(() => {
                                     <div style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '10px 20px', display: 'flex', flexDirection: 'column', gap: '5px', textAlign: 'right' }}>
                                         <div>
                                             <span style={{ color: '#475569', fontSize: '0.95rem', marginRight: '15px' }}>Subtotal Servicios:</span>
-                                            <span style={{ fontWeight: 'bold', fontSize: '1.05rem' }}>${totalMO.toFixed(2)}</span>
+                                            <span style={{ fontWeight: 'bold', fontSize: '1.05rem' }}>${formatDinero(totalMO)}</span>
                                         </div>
 
                                         {/* Solo aparece si hay descuento MO cargado */}
@@ -1054,11 +1060,11 @@ useEffect(() => {
                                             <>
                                                 <div style={{ color: '#b45309' }}>
                                                     <span style={{ fontSize: '0.9rem', marginRight: '15px' }}>Bonificación servicios ({descuentoMO}%):</span>
-                                                    <span style={{ fontStyle: 'italic', fontWeight: 'bold' }}>-${descuentoMOMonto.toFixed(2)}</span>
+                                                    <span style={{ fontStyle: 'italic', fontWeight: 'bold' }}>-${formatDinero(descuentoMOMonto)}</span>
                                                 </div>
                                                 <div style={{ borderTop: '1px solid #cbd5e1', marginTop: '5px', paddingTop: '5px' }}>
                                                     <span style={{ fontWeight: 'bold', color: '#1e293b', fontSize: '1rem', marginRight: '15px' }}>Total Servicios:</span>
-                                                    <span style={{ fontWeight: '900', color: '#dc2626', fontSize: '1.15rem' }}>${totalMOFinal.toFixed(2)}</span>
+                                                    <span style={{ fontWeight: '900', color: '#dc2626', fontSize: '1.15rem' }}>${formatDinero(totalMOFinal)}</span>
                                                 </div>
                                             </>
                                         )}
@@ -1067,18 +1073,37 @@ useEffect(() => {
                             </div>
 
                             {/* BLOQUE PRODUCTOS / REPUESTOS LIBRES */}
-                            {/* BLOQUE PRODUCTOS / REPUESTOS LIBRES */}
-                            <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
-                                <h3 style={{ marginTop: 0, color: '#dc2626', fontSize: '1.1rem' }}>📦 Repuestos</h3>
-                                <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                                    <input type="text" style={{ ...s.input, flex: 1 }} placeholder="Escriba la descripción del repuesto o pieza a solicitar..." value={prodTextoLibre} onChange={e => setProdTextoLibre(e.target.value)} />
-                                    <input type="number" min="1" style={{ ...s.input, width: '80px' }} placeholder="Cant" title="Cantidad" value={cantProd} onChange={e => setCantProd(Number(e.target.value))} />
-                                    <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '0 10px' }}>
-                                        <span style={{ color: '#64748b', fontWeight: 'bold' }}>$</span>
-                                        <input type="number" min="0" style={{ padding: '10px', border: 'none', width: '100px', outline: 'none' }} placeholder="Unitario" value={precioUnitarioProd} onChange={e => setPrecioUnitarioProd(Number(e.target.value))} />
+{/* BLOQUE PRODUCTOS / REPUESTOS LIBRES */}
+                                <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
+                                    
+                                    {/* Título y Mensaje de Ayuda alineados */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '15px' }}>
+                                        <h3 style={{ marginTop: 0, marginBottom: 0, color: '#dc2626', fontSize: '1.1rem' }}>📦 Repuestos</h3>
+                                        <span style={{ fontSize: '0.8rem', color: '#64748b', fontStyle: 'italic' }}>
+                                            * Ingresar precio sin puntos de miles (Ej: 15000.50)
+                                        </span>
                                     </div>
-                                    <button style={s.btnPr} onClick={handleAgregarProductoLibre}>+</button>
-                                </div>
+
+                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                                        <input type="text" style={{ ...s.input, flex: 1 }} placeholder="Escriba la descripción del repuesto o pieza a solicitar..." value={prodTextoLibre} onChange={e => setProdTextoLibre(e.target.value)} />
+                                        
+                                        <input type="number" min="1" style={{ ...s.input, width: '80px' }} placeholder="Cant" title="Cantidad" value={cantProd} onChange={e => setCantProd(Number(e.target.value))} />
+                                        
+                                        <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '0 10px' }} title="Escriba el número seguido, sin puntos para los miles.">
+                                            <span style={{ color: '#64748b', fontWeight: 'bold' }}>$</span>
+                                            <input 
+                                                type="number" 
+                                                min="0" 
+                                                step="any" /* <-- ESTO ES CLAVE: Le dice al navegador que acepte cualquier decimal */
+                                                style={{ padding: '10px', border: 'none', width: '100px', outline: 'none' }} 
+                                                placeholder="Unitario" 
+                                                value={precioUnitarioProd === 0 ? '' : precioUnitarioProd} /* Mejora: si es 0 muestra vacío para no molestar visualmente */
+                                                onChange={e => setPrecioUnitarioProd(e.target.value ? Number(e.target.value) : 0)} 
+                                            />
+                                        </div>
+                                        
+                                        <button style={s.btnPr} onClick={handleAgregarProductoLibre}>+</button>
+                                    </div>
 
                                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                     <thead>
@@ -1124,11 +1149,11 @@ useEffect(() => {
                                                             />
                                                         </div>
                                                     ) : (
-                                                        `$${item.precio_unitario}`
+                                                        `$${formatDinero(item.precio_unitario)}`
                                                     )}
                                                 </td>
 
-                                                <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 'bold' }}>${item.precio_total}</td>
+                                                <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 'bold' }}>${formatDinero(item.precio_total)}</td>
 
                                                 {/* ACCIONES DINÁMICAS */}
                                                 <td style={{ padding: '10px 8px', textAlign: 'center', fontSize: '1.1rem' }}>
@@ -1158,7 +1183,7 @@ useEffect(() => {
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '15px', paddingRight: '8px' }}>
                                     <div style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '15px' }}>
                                         <span style={{ fontWeight: 'bold', color: '#475569', fontSize: '0.95rem' }}>Subtotal Repuestos:</span>
-                                        <span style={{ fontWeight: 'bold', color: '#dc2626', fontSize: '1.15rem' }}>${totalProd.toFixed(2)}</span>
+                                        <span style={{ fontWeight: 'bold', color: '#dc2626', fontSize: '1.15rem' }}>${formatDinero(totalProd)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1182,13 +1207,13 @@ useEffect(() => {
 
                                 {/* Mostramos el Bruto Puro inicial (Servicios sin desc + Repuestos) */}
                                 <div style={{ color: '#475569' }}>Subtotal con IVA (MO + Repuestos):</div>
-                                <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1e293b' }}>${(totalMO + totalProd).toFixed(2)}</div>
+                                <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1e293b' }}>${formatDinero(totalMO + totalProd)}</div>
 
                                 {/* Si hay Bonificación de Servicios, se lista acá */}
                                 {descuentoMO > 0 && (
                                     <>
                                         <div style={{ color: '#b45309' }}>Bonificación servicios ({descuentoMO}%):</div>
-                                        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#b45309', fontStyle: 'italic' }}>-${descuentoMOMonto.toFixed(2)}</div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#b45309', fontStyle: 'italic' }}>-${formatDinero(descuentoMOMonto)}</div>
                                     </>
                                 )}
 
@@ -1196,12 +1221,12 @@ useEffect(() => {
                                 {descuento > 0 && (
                                     <>
                                         <div style={{ color: '#b45309' }}>Bonificación general ({descuento}%):</div>
-                                        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#b45309', fontStyle: 'italic' }}>-${descuentoMonto.toFixed(2)}</div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#b45309', fontStyle: 'italic' }}>-${formatDinero(descuentoMonto)}</div>
                                     </>
                                 )}
 
                                 <div style={{ color: '#1e293b', fontWeight: 'bold', fontSize: '1.05rem', borderTop: '2px solid #cbd5e1', paddingTop: '8px' }}>TOTAL PRESUPUESTO:</div>
-                                <div style={{ fontWeight: '900', fontSize: '1.5rem', color: '#dc2626', borderTop: '2px solid #cbd5e1', paddingTop: '8px' }}>${totalFinalConIva.toFixed(2)}</div>
+                                <div style={{ fontWeight: '900', fontSize: '1.5rem', color: '#dc2626', borderTop: '2px solid #cbd5e1', paddingTop: '8px' }}>${formatDinero(totalFinalConIva)}</div>
                             </div>
 
                             <button style={{ ...s.btnOk, padding: '15px 30px', fontSize: '1rem', boxShadow: '0 4px 6px rgba(22, 163, 74, 0.2)' }} onClick={handleGuardarPresupuestoCompleto}>
@@ -1211,7 +1236,7 @@ useEffect(() => {
                     </div>
                 )}
 
-                {/* --- VISTA DE IMPRESIÓN (A4) --- */}
+{/* --- VISTA DE IMPRESIÓN (A4) --- */}
                 {vista === 'ver' && presupuestoActivo && (
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#e2e8f0', padding: '20px 0', borderRadius: '8px' }}>
 
@@ -1297,19 +1322,18 @@ useEffect(() => {
                                             {itemsMO.map(mo => (
                                                 <tr key={mo.id}>
                                                     <td style={{ padding: '6px', textAlign: 'center', borderBottom: '1px solid #e2e8f0', color: '#64748b' }}>{mo.item_servicio}</td>
-                                                    {/* Reemplazá esta celda en la tabla de servicios del PDF */}
                                                     <td style={{ padding: '6px', borderBottom: '1px solid #e2e8f0' }}>
                                                         {mo.bd_mo?.servicio || mo.descripcion_servicio || 'Servicio sin descripción'}
                                                     </td>
                                                     <td style={{ padding: '6px', textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>{mo.cantidad}</td>
-                                                    <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e2e8f0' }}>${mo.precio_unitario}</td>
-                                                    <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e2e8f0' }}>${mo.precio_total}</td>
+                                                    <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e2e8f0' }}>${formatDinero(mo.precio_unitario)}</td>
+                                                    <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e2e8f0' }}>${formatDinero(mo.precio_total)}</td>
                                                 </tr>
                                             ))}
                                             {/* Subtotal de la Sección */}
                                             <tr>
                                                 <td colSpan="4" style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 'bold', color: '#475569' }}>Subtotal Servicios:</td>
-                                                <td style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 'bold', borderTop: '1px solid #cbd5e1' }}>${totalMO.toFixed(2)}</td>
+                                                <td style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 'bold', borderTop: '1px solid #cbd5e1' }}>${formatDinero(totalMO)}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1334,14 +1358,14 @@ useEffect(() => {
                                                 <tr key={prod.id}>
                                                     <td style={{ padding: '6px', borderBottom: '1px solid #e2e8f0' }}>{prod.producto_texto_libre}</td>
                                                     <td style={{ padding: '6px', textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>{prod.cantidad}</td>
-                                                    <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e2e8f0' }}>${prod.precio_unitario}</td>
-                                                    <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e2e8f0' }}>${prod.precio_total}</td>
+                                                    <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e2e8f0' }}>${formatDinero(prod.precio_unitario)}</td>
+                                                    <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e2e8f0' }}>${formatDinero(prod.precio_total)}</td>
                                                 </tr>
                                             ))}
                                             {/* Subtotal de la Sección */}
                                             <tr>
                                                 <td colSpan="3" style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 'bold', color: '#475569' }}>Subtotal Repuestos:</td>
-                                                <td style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 'bold', borderTop: '1px solid #cbd5e1' }}>${totalProd.toFixed(2)}</td>
+                                                <td style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 'bold', borderTop: '1px solid #cbd5e1' }}>${formatDinero(totalProd)}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1354,7 +1378,7 @@ useEffect(() => {
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                         <span style={{ color: '#475569' }}>Subtotal CON IVA:</span>
-                                        <span>${presupuestoActivo.subtotal_con_iva?.toFixed(2)}</span>
+                                        <span>${formatDinero(presupuestoActivo.subtotal_con_iva)}</span>
                                     </div>
 
                                     {/* BONIFICACIÓN SERVICIOS - ¡Acá usamos el total_mo_bruto que guardamos! */}
@@ -1362,7 +1386,7 @@ useEffect(() => {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#b45309' }}>
                                             <span>Bonificación ({presupuestoActivo.descuento_porcentaje_mo}%):</span>
                                             <span style={{ fontStyle: 'italic' }}>
-                                                - ${((presupuestoActivo.total_mo_bruto || 0) * presupuestoActivo.descuento_porcentaje_mo / 100).toFixed(2)}
+                                                - ${formatDinero((presupuestoActivo.total_mo_bruto || 0) * presupuestoActivo.descuento_porcentaje_mo / 100)}
                                             </span>
                                         </div>
                                     )}
@@ -1372,14 +1396,14 @@ useEffect(() => {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#b45309' }}>
                                             <span>Bonificación ({presupuestoActivo.descuento_porcentaje}%):</span>
                                             <span style={{ fontStyle: 'italic' }}>
-                                                - ${((presupuestoActivo.subtotal_con_iva * presupuestoActivo.descuento_porcentaje) / 100).toFixed(2)}
+                                                - ${formatDinero((presupuestoActivo.subtotal_con_iva * presupuestoActivo.descuento_porcentaje) / 100)}
                                             </span>
                                         </div>
                                     )}
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '1.25rem', fontWeight: 'bold', borderTop: '2px solid #000', paddingTop: '10px' }}>
                                         <span>Total presupuesto:</span>
-                                        <span style={{ color: '#dc2626' }}>${presupuestoActivo.total_presupuesto_con_iva?.toFixed(2)}</span>
+                                        <span style={{ color: '#dc2626' }}>${formatDinero(presupuestoActivo.total_presupuesto_con_iva)}</span>
                                     </div>
 
                                 </div>

@@ -46,11 +46,11 @@ function Comisiones() {
         setMostrarSugerencias(false);
     };
 
-const handleGuardar = async () => {
+    const handleGuardar = async () => {
         if (!formData.id_cliente || !formData.importe) return alert("⚠️ Por favor, complete el Importe y seleccione un Presupuesto.");
-        
+
         // 1. Creamos una copia limpia para guardar
-        const dataToSave = { 
+        const dataToSave = {
             id_presupuesto: formData.id_presupuesto || null,
             id_cliente: formData.id_cliente,
             fecha: formData.fecha,
@@ -58,7 +58,7 @@ const handleGuardar = async () => {
             forma_pago: formData.forma_pago,
             nota: formData.nota || ''
         };
-        
+
         // 2. Si es edición, Supabase necesita el ID, si es nuevo, NO debe ir el ID
         try {
             if (formData.id) {
@@ -67,7 +67,7 @@ const handleGuardar = async () => {
                     .from('bd_comisiones')
                     .update(dataToSave)
                     .eq('id', formData.id);
-                
+
                 if (error) throw error;
                 alert("✅ Comisión actualizada correctamente.");
             } else {
@@ -75,11 +75,11 @@ const handleGuardar = async () => {
                 const { error } = await supabase
                     .from('bd_comisiones')
                     .insert([dataToSave]);
-                
+
                 if (error) throw error;
                 alert("✅ Comisión guardada correctamente.");
             }
-            
+
             setVista('listado');
             cargarDatos();
         } catch (error) {
@@ -102,7 +102,7 @@ const handleGuardar = async () => {
         const nombreCliente = `${c.bd_clientes?.nombre || ''} ${c.bd_clientes?.apellido || ''}`;
         const fechaFormat = new Date(c.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' });
         const tituloArchivo = `Comisión N° ${c.id} - ${nombreCliente} - ${fechaFormat.replace(/\//g, '-')}.pdf`;
-        
+
         const ventana = window.open('', '_blank');
         ventana.document.write(`
             <html>
@@ -143,11 +143,11 @@ const handleGuardar = async () => {
                         <div style={{ display: 'flex', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between' }}>
                             <h2 style={{ margin: 0 }}>💰 Comisiones</h2>
                             <input placeholder="🔍 Buscar por N° Comisión, Cliente o Presupuesto..." style={{ ...s.input, width: '400px' }} value={busqueda} onChange={e => setBusqueda(e.target.value)} />
-                            <button style={s.btnPr} onClick={() => { 
-                                setFormData({ id: null, id_presupuesto: '', id_cliente: '', fecha: new Date().toISOString().split('T')[0], importe: '', forma_pago: 'Efectivo', nota: '' }); 
-                                setBusquedaPresu(''); 
+                            <button style={s.btnPr} onClick={() => {
+                                setFormData({ id: null, id_presupuesto: '', id_cliente: '', fecha: new Date().toISOString().split('T')[0], importe: '', forma_pago: 'Efectivo', nota: '' });
+                                setBusquedaPresu('');
                                 setMostrarSugerencias(false);
-                                setVista('crear'); 
+                                setVista('crear');
                             }}>+ Nueva Comisión</button>
                         </div>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -161,22 +161,25 @@ const handleGuardar = async () => {
                                     <tr key={c.id}>
                                         <td style={s.td}>#{c.id}</td>
                                         <td style={s.td}>{new Date(c.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</td>
-                                        <td style={s.td}>{c.bd_clientes?.nombre} {c.bd_clientes?.apellido}</td>
+
+                                        <td style={s.td}>
+                                            <strong>{c.bd_clientes?.nombre} {c.bd_clientes?.apellido}</strong>
+                                        </td>
                                         <td style={s.td}>#{c.id_presupuesto || 'S/N'}</td>
                                         <td style={s.td}>{c.forma_pago}</td>
                                         <td style={s.td}>${Number(c.importe).toFixed(2)}</td>
                                         <td style={s.td}>
                                             <div style={{ display: 'flex', gap: '12px', fontSize: '1.2rem' }}>
                                                 <span style={{ cursor: 'pointer' }} title="Imprimir" onClick={() => imprimirComision(c)}>🖨️</span>
-                                                <span style={{ cursor: 'pointer' }} title="Editar" onClick={() => { 
-                                                    setFormData({ ...c, nota: c.nota || '' }); 
-                                                    setBusquedaPresu(c.id_presupuesto ? `N° ${c.id_presupuesto}` : ''); 
+                                                <span style={{ cursor: 'pointer' }} title="Editar" onClick={() => {
+                                                    setFormData({ ...c, nota: c.nota || '' });
+                                                    setBusquedaPresu(c.id_presupuesto ? `N° ${c.id_presupuesto}` : '');
                                                     setMostrarSugerencias(false);
-                                                    setVista('editar'); 
+                                                    setVista('editar');
                                                 }}>✏️</span>
-                                                <span style={{ cursor: 'pointer', color: '#dc2626' }} title="Eliminar" onClick={() => { 
-                                                    if(window.confirm(`⚠️ ¿Seguro que desea eliminar de forma permanente la Comisión N° ${c.id}? Esta acción no se puede deshacer.`)) {
-                                                        supabase.from('bd_comisiones').delete().eq('id', c.id).then(cargarDatos); 
+                                                <span style={{ cursor: 'pointer', color: '#dc2626' }} title="Eliminar" onClick={() => {
+                                                    if (window.confirm(`⚠️ ¿Seguro que desea eliminar de forma permanente la Comisión N° ${c.id}? Esta acción no se puede deshacer.`)) {
+                                                        supabase.from('bd_comisiones').delete().eq('id', c.id).then(cargarDatos);
                                                     }
                                                 }}>🗑️</span>
                                             </div>
@@ -195,7 +198,7 @@ const handleGuardar = async () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                             <div style={{ position: 'relative' }}>
                                 <label style={s.label}>Buscar Presupuesto</label>
-                                <input style={s.input} value={busquedaPresu} onFocus={() => setMostrarSugerencias(true)} onChange={e => {setBusquedaPresu(e.target.value); setMostrarSugerencias(true)}} placeholder="Buscar por N° o Nombre/Apellido..." />
+                                <input style={s.input} value={busquedaPresu} onFocus={() => setMostrarSugerencias(true)} onChange={e => { setBusquedaPresu(e.target.value); setMostrarSugerencias(true) }} placeholder="Buscar por N° o Nombre/Apellido..." />
                                 {mostrarSugerencias && busquedaPresu && (
                                     <ul style={{ position: 'absolute', background: '#fff', border: '1px solid #cbd5e1', width: '100%', zIndex: 10, listStyle: 'none', padding: 0, maxHeight: '180px', overflowY: 'auto', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', borderRadius: '8px' }}>
                                         {presupuestos
@@ -215,11 +218,11 @@ const handleGuardar = async () => {
                             </div>
                             <div>
                                 <label style={s.label}>Importe Comisión ($) *</label>
-                                <input type="number" style={s.input} value={formData.importe} onChange={e => setFormData({...formData, importe: e.target.value})} placeholder="0.00" />
+                                <input type="number" style={s.input} value={formData.importe} onChange={e => setFormData({ ...formData, importe: e.target.value })} placeholder="0.00" />
                             </div>
                             <div>
                                 <label style={s.label}>Forma de Pago *</label>
-                                <select style={s.input} value={formData.forma_pago} onChange={e => setFormData({...formData, forma_pago: e.target.value})}>
+                                <select style={s.input} value={formData.forma_pago} onChange={e => setFormData({ ...formData, forma_pago: e.target.value })}>
                                     <option value="Efectivo">Efectivo</option>
                                     <option value="Transferencia">Transferencia</option>
                                     <option value="Cheque">Cheque</option>
@@ -227,9 +230,9 @@ const handleGuardar = async () => {
                             </div>
                             <div>
                                 <label style={s.label}>Fecha de Comisión *</label>
-                                <input type="date" style={s.input} value={formData.fecha} onChange={e => setFormData({...formData, fecha: e.target.value})} />
+                                <input type="date" style={s.input} value={formData.fecha} onChange={e => setFormData({ ...formData, fecha: e.target.value })} />
                             </div>
-                            
+
                             {/* RECUADRO INFORMATIVO DEL TOTAL DEL PRESUPUESTO */}
                             {formData.id_presupuesto && (
                                 <div>
@@ -240,7 +243,7 @@ const handleGuardar = async () => {
 
                             <div style={{ gridColumn: 'span 2' }}>
                                 <label style={s.label}>Nota / Observaciones (Opcional)</label>
-                                <textarea style={{ ...s.input, height: '60px', resize: 'vertical' }} value={formData.nota || ''} onChange={e => setFormData({...formData, nota: e.target.value})} placeholder="Detalles extra sobre la comisión..." />
+                                <textarea style={{ ...s.input, height: '60px', resize: 'vertical' }} value={formData.nota || ''} onChange={e => setFormData({ ...formData, nota: e.target.value })} placeholder="Detalles extra sobre la comisión..." />
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>

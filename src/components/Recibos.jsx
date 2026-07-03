@@ -25,10 +25,19 @@ function Recibos() {
     const [reciboFicha, setReciboFicha] = useState(null);
     const [modalFichaVisible, setModalFichaVisible] = useState(false);
 
+    // FUNCIÓN PARA FORMATEAR DINERO (Puntos de miles y comas decimales)
+    const formatDinero = (num) => {
+        return new Intl.NumberFormat('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(Number(num || 0));
+    };
+
     const abrirFicha = (r) => {
         setReciboFicha(r);
         setModalFichaVisible(true);
     };
+
     const s = {
         card: { background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' },
         input: { padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', width: '100%', boxSizing: 'border-box', outline: 'none' },
@@ -59,11 +68,10 @@ function Recibos() {
         setMostrarSugerencias(false);
     };
 
-const handleGuardar = async () => {
+    const handleGuardar = async () => {
         if (!formData.id_cliente || !formData.importe) return alert("⚠️ Por favor, complete el Importe y seleccione un Presupuesto.");
 
         // 1. Preparamos el objeto limpio para la base de datos
-        // Extraemos explícitamente los campos para evitar enviar basura o el 'id'
         const dataToSave = {
             id_presupuesto: formData.id_presupuesto || null,
             id_cliente: formData.id_cliente,
@@ -76,7 +84,6 @@ const handleGuardar = async () => {
 
         try {
             if (formData.id) {
-                // ACTUALIZAR: Pasamos dataToSave (SIN EL ID ADENTRO) y el .eq('id', ...)
                 const { error } = await supabase
                     .from('bd_recibos')
                     .update(dataToSave)
@@ -85,7 +92,6 @@ const handleGuardar = async () => {
                 if (error) throw error;
                 alert("✅ Recibo actualizado correctamente.");
             } else {
-                // INSERTAR: Pasamos el array con dataToSave
                 const { error } = await supabase
                     .from('bd_recibos')
                     .insert([dataToSave]);
@@ -109,68 +115,66 @@ const handleGuardar = async () => {
 
     const getMontoPresupuesto = (id) => {
         const p = presupuestos.find(pres => String(pres.id) === String(id));
-        return p ? Number(p.total_presupuesto_con_iva).toFixed(2) : '0.00';
+        return p ? formatDinero(p.total_presupuesto_con_iva) : '0,00';
     };
 
-const imprimirRecibo = (r) => {
-    // 1. Abrimos la ventana y definimos el título como el nombre del archivo deseado
-    const nombreCliente = `${r.bd_clientes?.nombre || ''} ${r.bd_clientes?.apellido || ''}`;
-    const fecha = new Date(r.fecha_recibo).toLocaleDateString('es-AR', { timeZone: 'UTC' }).replace(/\//g, '-');
-    const tituloArchivo = `Recibo N° ${r.id} - ${nombreCliente} - ${fecha}`;
-    
-    const ventana = window.open('', '_blank');
-    
-    ventana.document.write(`
-        <html>
-            <head>
-                <title>${tituloArchivo}</title>
-                <style>
-                    /* Fuerza fondo blanco en toda la hoja */
-                    body { 
-                        font-family: sans-serif; 
-                        padding: 20px; 
-                        color: #333; 
-                        background-color: #ffffff !important; 
-                    }
-                    .recibo-container { 
-                        border: 2px solid #333; 
-                        padding: 40px; 
-                        max-width: 600px; 
-                        margin: auto; 
-                        border-radius: 8px;
-                        background-color: #ffffff;
-                    }
-                    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #dc2626; padding-bottom: 15px; margin-bottom: 30px; }
-                    .logo { width: 100px; }
-                    .texto-principal { font-size: 1.1rem; line-height: 1.8; text-align: justify; }
-                </style>
-            </head>
-            <body>
-                <div class="recibo-container">
-                    <div class="header">
-                        <img src="${logoRubal}" class="logo" alt="Logo" />
-                        <h2 style="margin: 0; color: #dc2626;">RECIBO N° ${r.id}</h2>
-                    </div>
-                    
-                    <div class="texto-principal">
-                        <p>El día <b>${new Date(r.fecha_recibo).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</b>, recibí de <b>${nombreCliente}</b> el importe de 
-                        <b>$${Number(r.importe).toFixed(2)}</b> mediante <b>${r.forma_pago}</b>, 
-                        en concepto de pago del Presupuesto N° <b>${r.id_presupuesto || 'S/N'}</b>.</p>
+    const imprimirRecibo = (r) => {
+        const nombreCliente = `${r.bd_clientes?.nombre || ''} ${r.bd_clientes?.apellido || ''}`;
+        const fecha = new Date(r.fecha_recibo).toLocaleDateString('es-AR', { timeZone: 'UTC' }).replace(/\//g, '-');
+        const tituloArchivo = `Recibo N° ${r.id} - ${nombreCliente} - ${fecha}`;
+        
+        const ventana = window.open('', '_blank');
+        
+        ventana.document.write(`
+            <html>
+                <head>
+                    <title>${tituloArchivo}</title>
+                    <style>
+                        body { 
+                            font-family: sans-serif; 
+                            padding: 20px; 
+                            color: #333; 
+                            background-color: #ffffff !important; 
+                        }
+                        .recibo-container { 
+                            border: 2px solid #333; 
+                            padding: 40px; 
+                            max-width: 600px; 
+                            margin: auto; 
+                            border-radius: 8px;
+                            background-color: #ffffff;
+                        }
+                        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #dc2626; padding-bottom: 15px; margin-bottom: 30px; }
+                        .logo { width: 100px; }
+                        .texto-principal { font-size: 1.1rem; line-height: 1.8; text-align: justify; }
+                    </style>
+                </head>
+                <body>
+                    <div class="recibo-container">
+                        <div class="header">
+                            <img src="${logoRubal}" class="logo" alt="Logo" />
+                            <h2 style="margin: 0; color: #dc2626;">RECIBO N° ${r.id}</h2>
+                        </div>
                         
-                        ${r.nota ? `<p style="font-size: 0.9rem; color: #555;"><i>Observaciones: ${r.nota}</i></p>` : ''}
+                        <div class="texto-principal">
+                            <p>El día <b>${new Date(r.fecha_recibo).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</b>, recibí de <b>${nombreCliente}</b> el importe de 
+                            <b>$${formatDinero(r.importe)}</b> mediante <b>${r.forma_pago}</b>, 
+                            en concepto de pago del Presupuesto N° <b>${r.id_presupuesto || 'S/N'}</b>.</p>
+                            
+                            ${r.nota ? `<p style="font-size: 0.9rem; color: #555;"><i>Observaciones: ${r.nota}</i></p>` : ''}
+                        </div>
                     </div>
-                </div>
-                <script>
-                    setTimeout(() => {
-                        window.print();
-                        window.close();
-                    }, 500);
-                </script>
-            </body>
-        </html>
-    `);
-    ventana.document.close();
-};
+                    <script>
+                        setTimeout(() => {
+                            window.print();
+                            window.close();
+                        }, 500);
+                    </script>
+                </body>
+            </html>
+        `);
+        ventana.document.close();
+    };
 
     return (
         <div style={{ padding: '20px', maxWidth: '1100px', margin: '0 auto' }}>
@@ -198,17 +202,19 @@ const imprimirRecibo = (r) => {
                                     <tr key={r.id}>
                                         <td style={s.td}>#{r.id}</td>
                                         <td style={s.td}>{new Date(r.fecha_recibo).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</td>
-                                        <td style={s.td}>{r.bd_clientes?.nombre} {r.bd_clientes?.apellido}</td>
-                                        <td style={s.td}>${Number(r.importe).toFixed(2)}</td>
+                                       <td style={{ ...s.td, fontWeight: 'bold' }}>
+    {r.bd_clientes?.nombre} {r.bd_clientes?.apellido}
+</td>
+                                        <td style={s.td}>${formatDinero(r.importe)}</td> 
                                         <td style={s.td}>
                                             <div style={{ display: 'flex', gap: '12px', fontSize: '1.2rem' }}>
                                                <span 
-    style={{ cursor: 'pointer' }} 
-    title="Imprimir Recibo" 
-    onClick={() => imprimirRecibo(r)}
->
-    🖨️
-</span>
+                                                    style={{ cursor: 'pointer' }} 
+                                                    title="Imprimir Recibo" 
+                                                    onClick={() => imprimirRecibo(r)}
+                                                >
+                                                    🖨️
+                                                </span>
                                                 <span style={{ cursor: 'pointer' }} title="Editar" onClick={() => {
                                                     setFormData({
                                                         ...r,
@@ -242,7 +248,7 @@ const imprimirRecibo = (r) => {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
 
-                            {/* BUSCADOR INTELIGENTE CON DESVINCULADOR (Solución Punto 1 y 6) */}
+                            {/* BUSCADOR INTELIGENTE CON DESVINCULADOR */}
                             <div>
                                 <label style={s.label}>Presupuesto Aprobado</label>
                                 {formData.id_presupuesto ? (
@@ -273,7 +279,7 @@ const imprimirRecibo = (r) => {
                                         {mostrarSugerencias && busquedaPresu && (
                                             <ul style={{ position: 'absolute', width: '100%', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px', zIndex: 10, listStyle: 'none', padding: 0, maxHeight: '180px', overflowY: 'auto', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                                                 {presupuestos
-                                                    .filter(p => p.estado === 'APROBADO') // Solo permitimos elegir aprobados para recibos nuevos
+                                                    .filter(p => p.estado === 'APROBADO')
                                                     .filter(p => String(p.id).includes(busquedaPresu) || `${p.bd_clientes?.nombre} ${p.bd_clientes?.apellido}`.toLowerCase().includes(busquedaPresu.toLowerCase()))
                                                     .map(p => (
                                                         <li key={p.id} style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9' }}
@@ -288,16 +294,28 @@ const imprimirRecibo = (r) => {
                                 )}
                             </div>
 
-                            {/* CLIENTE AUTOCOMPLETADO (Deshabilitado seguro) */}
+                            {/* CLIENTE AUTOCOMPLETADO */}
                             <div>
                                 <label style={s.label}>Cliente</label>
                                 <input style={{ ...s.input, background: '#f1f5f9' }} value={getNombreCliente(formData.id_cliente) || ''} placeholder="Se autocompleta al elegir el presupuesto..." disabled />
                             </div>
 
-                            {/* IMPORTE PAGADO */}
+                            {/* IMPORTE PAGADO CON CARTEL AYUDA */}
                             <div>
-                                <label style={s.label}>Importe Pagado ($) *</label>
-                                <input type="number" style={s.input} value={formData.importe ?? ''} onChange={e => setFormData({ ...formData, importe: e.target.value })} placeholder="0.00" />
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '5px' }}>
+                                    <label style={{ ...s.label, marginBottom: 0 }}>Importe Pagado ($) *</label>
+                                    <span style={{ fontSize: '0.8rem', color: '#64748b', fontStyle: 'italic' }}>
+                                        * Ingresar sin puntos (Ej: 15000.50)
+                                    </span>
+                                </div>
+                                <input 
+                                    type="number" 
+                                    step="any" /* Permite cargar decimales correctamente */
+                                    style={s.input} 
+                                    value={formData.importe ?? ''} 
+                                    onChange={e => setFormData({ ...formData, importe: e.target.value })} 
+                                    placeholder="0.00" 
+                                />
                             </div>
 
                             {/* FORMA DE PAGO */}
@@ -316,14 +334,14 @@ const imprimirRecibo = (r) => {
                                 <input type="date" style={s.input} value={formData.fecha_recibo || ''} onChange={e => setFormData({ ...formData, fecha_recibo: e.target.value })} />
                             </div>
 
-                            {/* CAMPO CONDICIONAL DE DESCUENTO HISTÓRICO (Solo lectura de salida si > 0) */}
+                            {/* CAMPO CONDICIONAL DE DESCUENTO HISTÓRICO FORMATEADO */}
                             {formData.id && Number(formData.descuento) > 0 && (
                                 <div>
                                     <label style={s.label}>Descuento / Ajuste Aplicado ($) [Histórico]</label>
                                     <input
-                                        type="number"
+                                        type="text" /* Pasamos a text para poder mostrar el formato */
                                         style={{ ...s.input, background: '#fef2f2', border: '1px solid #fee2e2', color: '#991b1b', fontWeight: 'bold' }}
-                                        value={formData.descuento ?? 0}
+                                        value={`$ ${formatDinero(formData.descuento)}`}
                                         disabled
                                     />
                                 </div>
@@ -341,10 +359,10 @@ const imprimirRecibo = (r) => {
                             </div>
                         </div>
 
-                        {/* TEXTO INFORMATIVO DINÁMICO */}
+                        {/* TEXTO INFORMATIVO DINÁMICO FORMATEADO */}
                         <div style={{ marginTop: '25px', padding: '20px', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #94a3b8' }}>
                             <p style={{ margin: 0, fontStyle: 'italic', color: '#334155', fontSize: '1.05rem', lineHeight: '1.5' }}>
-                                El día <b>{formData.fecha_recibo ? new Date(formData.fecha_recibo).toLocaleDateString('es-AR', { timeZone: 'UTC' }) : '...'}</b> recibo de <b>{getNombreCliente(formData.id_cliente) || '...'}</b> el importe de <b>${formData.importe || '0'}</b> mediante <b>{formData.forma_pago || '...'}</b> en concepto de pago del Presupuesto N° {formData.id_presupuesto || '...'}.
+                                El día <b>{formData.fecha_recibo ? new Date(formData.fecha_recibo).toLocaleDateString('es-AR', { timeZone: 'UTC' }) : '...'}</b> recibo de <b>{getNombreCliente(formData.id_cliente) || '...'}</b> el importe de <b>${formatDinero(formData.importe)}</b> mediante <b>{formData.forma_pago || '...'}</b> en concepto de pago del Presupuesto N° {formData.id_presupuesto || '...'}.
 
                                 {formData.id_presupuesto && (
                                     <span style={{ display: 'block', marginTop: '10px', color: '#0f172a' }}>
@@ -354,7 +372,7 @@ const imprimirRecibo = (r) => {
 
                                 {Number(formData.descuento) !== 0 && (
                                     <span style={{ display: 'block', marginTop: '5px', color: '#b45309', fontWeight: 'bold' }}>
-                                        ⚠️ Nota de Historial: En este recibo se aplicaron descuentos por un valor de ${Math.abs(Number(formData.descuento)).toFixed(2)}.
+                                        ⚠️ Nota de Historial: En este recibo se aplicaron descuentos por un valor de ${formatDinero(Math.abs(Number(formData.descuento)))}.
                                     </span>
                                 )}
                             </p>
