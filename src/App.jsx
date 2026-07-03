@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import logoRubal from './assets/logo_rubal.png';
+import Login from './components/Login'; // <-- IMPORTAMOS EL LOGIN
 import Clientes from './components/Clientes';
 import Marcas from './components/Marcas';
 import Categorias from './components/Categorias';
@@ -21,8 +22,30 @@ import Caja from './components/Caja';
 import Dashboard_Gastos from './components/Dashboard_Gastos';
 
 function App() {
+  // =========================================================
+  // 0. SISTEMA DE LOGIN Y SEGURIDAD
+  // =========================================================
+  // Leemos de la memoria del navegador si el usuario ya se había logueado
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('taller_is_logged_in') === 'true';
+  });
+
+  const handleLoginStatus = (status) => {
+    setIsLoggedIn(status);
+    if (status) {
+      localStorage.setItem('taller_is_logged_in', 'true');
+    } else {
+      localStorage.removeItem('taller_is_logged_in');
+    }
+  };
+
   // Historial guarda las secciones visitadas
   const [historial, setHistorial] = useState([]);
+
+  // Si no está logueado, BLOQUEA la App entera y muestra el Login
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLoginStatus} />;
+  }
 
   // =========================================================
   // 1. MENÚ PRINCIPAL (NIVEL 0)
@@ -34,7 +57,6 @@ function App() {
     { id: 'trabajos', titulo: 'Trabajos', icon: '🛠️', desc: 'Control de motores, estados y fecha fin.' },
     { id: 'pagos', titulo: 'Pagos', icon: '💳', desc: 'Registro de cobros, señas y saldos.' },
     { id: 'caja', titulo: 'Caja', icon: '💵', desc: 'Registro de ingreso y salida de dinero.' }
-
   ];
 
   // =========================================================
@@ -66,8 +88,7 @@ function App() {
     trabajos: [
       { id: 'trabajos_gestion', titulo: 'Gestión de Trabajos', icon: '🔧', desc: 'Órdenes de trabajos, estados y fechas.' },
       { id: 'trabajos_dashboard', titulo: 'Dashboard Trabajos', icon: '🚥', desc: 'Monitoreo de trabajos iniciados y finalizados.' }
-    ]
-    ,
+    ],
     caja: [
       { id: 'caja_gestion', titulo: 'Gestión de Caja', icon: '💸', desc: 'Ingresos y Salidas de dinero.' },
       { id: 'caja_dashboard_gastos', titulo: 'Dashboard Gastos', icon: '📈', desc: 'Monitoreo de salidas de dinero.' }
@@ -91,7 +112,6 @@ function App() {
   // =========================================================
   let tarjetaActual = menuPrincipal.find(t => t.id === seccionActiva);
   if (!tarjetaActual) {
-    // Si no está en el menú principal, lo buscamos en los submenús
     for (const key in subMenus) {
       const encontrada = subMenus[key].find(t => t.id === seccionActiva);
       if (encontrada) {
@@ -105,19 +125,30 @@ function App() {
     <div className="app-container">
       {/* HEADER */}
       <header className="app-header">
-        <div className="header-logo" onClick={irAlInicio} title="Ir al Inicio">
+        <div className="header-logo" onClick={irAlInicio} title="Ir al Inicio" style={{ cursor: 'pointer' }}>
           <img src={logoRubal} alt="Rubal Rectificaciones" className="logo-img" />
           <h1 className="header-titulo">Sistema Rubal Rectificaciones</h1>
         </div>
 
-        {historial.length > 0 && (
-          <div className="nav-actions">
-            {historial.length > 1 && (
-              <button className="btn-nav btn-inicio" onClick={irAlInicio}>🏠 Inicio</button>
-            )}
-            <button className="btn-nav btn-volver" onClick={volverAtras}>← Volver</button>
-          </div>
-        )}
+        <div className="nav-actions">
+          {/* Botones de navegación interna */}
+          {historial.length > 0 && (
+            <>
+              {historial.length > 1 && (
+                <button className="btn-nav btn-inicio" onClick={irAlInicio}>🏠 Inicio</button>
+              )}
+              <button className="btn-nav btn-volver" onClick={volverAtras}>← Volver</button>
+            </>
+          )}
+
+          {/* BOTÓN DE CERRAR SESIÓN */}
+          <button 
+            onClick={() => handleLoginStatus(false)} 
+            style={{ marginLeft: '20px', background: '#334155', color: 'white', border: '1px solid #475569', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Cerrar Sesión
+          </button>
+        </div>
       </header>
 
       {/* CONTENIDO PRINCIPAL */}
@@ -137,7 +168,6 @@ function App() {
         )}
 
         {/* NIVEL 1: SUBMENÚS DINÁMICOS */}
-        {/* Si la seccionActiva coincide con alguna clave de subMenus (ej: 'stock'), mostramos su grilla */}
         {subMenus[seccionActiva] && (
           <div className="seccion-contenedor">
             <h2>Módulo: {tarjetaActual?.titulo}</h2>
@@ -152,7 +182,6 @@ function App() {
             </div>
           </div>
         )}
-
 
         {/* NIVEL 2: COMPONENTES FINALES */}
         {seccionActiva !== null && !subMenus[seccionActiva] && (
