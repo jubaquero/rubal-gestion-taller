@@ -35,46 +35,91 @@ function Argon() {
 
     useEffect(() => { cargarDatos(); }, []);
 
-    const cargarDatos = async () => {
-        setCargando(true);
-        try {
-            const resRecargas = await supabase.from('bd_recargas_argon').select('*').order('fecha', { ascending: false });
-            
-            const [resMO, resTrabs, resClis, resNoms] = await Promise.all([
-                supabase.from('bd_trabajos_mo').select('*').eq('item_servicio', 3001), 
-                supabase.from('bd_trabajos').select('*'),
-                supabase.from('bd_clientes').select('*'),
-                supabase.from('bd_nomenclador').select('*')
-            ]);
+    // Función inteligente para traer TODOS los registros sin importar el límite
+const obtenerTodosLosRegistros = async (tabla) => {
+    let todosLosDatos = [];
+    let inicio = 0;
+    const cantidadPorPagina = 1000;
+    let hayMasDatos = true;
 
-            const listaRecargas = resRecargas.data || [];
-            const listaMO = resMO.data || [];
-            const listaTrabs = resTrabs.data || [];
-            const listaClis = resClis.data || [];
-            const listaNoms = resNoms.data || [];
+    while (hayMasDatos) {
+        // Pedimos "x" cantidad de registros
+        const { data, error } = await supabase
+            .from(tabla)
+            .select('*')
+            .range(inicio, inicio + cantidadPorPagina - 1);
 
-            const historialUsos = listaMO.map(mo => {
-                const trabajo = listaTrabs.find(t => t.id === mo.id_trabajo);
-                const cliente = trabajo ? listaClis.find(c => c.id === trabajo.id_cliente) : null;
-                const nomenclador = trabajo ? listaNoms.find(n => n.id === trabajo.id_nomenclador) : null;
-
-                return {
-                    id_mo: mo.id,
-                    id_trabajo: mo.id_trabajo,
-                    fecha: trabajo?.fecha_inicio || mo.created_at, 
-                    observacion: mo.observacion || 'Sin detalles',
-                    cliente_nombre: cliente ? `${cliente.nombre} ${cliente.apellido}` : 'Desconocido',
-                    motor: nomenclador ? nomenclador.descripcion : 'Sin especificar'
-                };
-            }).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-            setRecargas(listaRecargas);
-            setUsosArgon(historialUsos);
-        } catch (error) {
-            console.error("Error cargando datos de Argón", error);
+        if (error) {
+            console.error(`Error trayendo datos de ${tabla}:`, error);
+            break;
         }
-        setCargando(false);
-    };
+
+        if (data && data.length > 0) {
+            // Sumamos los datos nuevos a nuestra lista total
+            todosLosDatos = [...todosLosDatos, ...data];
+            
+            // Preparamos el índice para la siguiente página (Ej: de 0 pasa a 1000)
+            inicio += cantidadPorPagina;
+
+            // Si Supabase nos devolvió menos de 1000, significa que ya no quedan más páginas
+            if (data.length < cantidadPorPagina) {
+                hayMasDatos = false;
+            }
+        } else {
+            // Si data vino vacío, terminamos
+            hayMasDatos = false;
+        }
+    }
+
+    return todosLosDatos;
+};
+
+const cargarDatos = async () => {
+    setCargando(true);
+    try {
+        const resRecargas = await supabase.from('bd_recargas_argon').select('*').order('fecha', { ascending: false });
+        
+        // 1. Usamos la función paginada para la tabla gigante
+        const listaNoms = await obtenerTodosLosRegistros('bd_nomenclador');
+
+        // 2. Las otras tablas, como son más chicas, las cargamos normal
+        const [resMO, resTrabs, resClis] = await Promise.all([
+            supabase.from('bd_trabajos_mo').select('*').eq('item_servicio', 3001), 
+            supabase.from('bd_trabajos').select('*'),
+            supabase.from('bd_clientes').select('*')
+        ]);
+
+        const listaRecargas = resRecargas.data || [];
+        const listaMO = resMO.data || [];
+        const listaTrabs = resTrabs.data || [];
+        const listaClis = resClis.data || [];
+        
+        // La listaNoms ya es el array completo devuelto por nuestra función
+        // (ya no hace falta poner .data)
+
+        const historialUsos = listaMO.map(mo => {
+            const trabajo = listaTrabs.find(t => t.id === mo.id_trabajo);
+            const cliente = trabajo ? listaClis.find(c => c.id === trabajo.id_cliente) : null;
+            // Buscamos el motor en los 1209 registros completos
+            const nomenclador = trabajo ? listaNoms.find(n => String(n.id) === String(trabajo.id_nomenclador)) : null;
+
+            return {
+                id_mo: mo.id,
+                id_trabajo: mo.id_trabajo,
+                fecha: trabajo?.fecha_inicio || mo.created_at, 
+                observacion: mo.observacion || 'Sin detalles',
+                cliente_nombre: cliente ? `${cliente.nombre} ${cliente.apellido}` : 'Desconocido',
+                motor: nomenclador ? nomenclador.descripcion : 'Sin especificar'
+            };
+        }).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+        setRecargas(listaRecargas);
+        setUsosArgon(historialUsos);
+    } catch (error) {
+        console.error("Error cargando datos de Argón", error);
+    }
+    setCargando(false);
+};
 
 const handleGuardar = async () => {
     if (!formData.fecha) return alert("⚠️ Ingrese al menos la fecha de recarga.");
