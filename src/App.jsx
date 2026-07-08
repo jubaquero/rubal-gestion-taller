@@ -7,6 +7,7 @@ import Marcas from './components/Marcas';
 import Categorias from './components/Categorias';
 import Proveedores from './components/Proveedores';
 import Aumentos from './components/Aumentos';
+import Mano_de_Obra from './components/Mano_de_Obra';
 import Productos from './components/Productos';
 import Almacenes from './components/Almacenes';
 import Movimientos from './components/Movimientos';
@@ -69,6 +70,7 @@ function App() {
       { id: 'configuracion_marcas', titulo: 'Marcas', icon: '🏷️', desc: 'Gestión y alta de marcas de motores/vehículos.' },
       { id: 'configuracion_categorias', titulo: 'Categorías', icon: '🗂️', desc: 'Categorías de productos y repuestos.' },
       { id: 'configuracion_proveedores', titulo: 'Proveedores', icon: '🚛', desc: 'Administración, alta y búsqueda de Proveedores.' },
+      { id: 'configuracion_mo', titulo: 'Mano de Obra', icon: '🛠️', desc: 'Gestión de servicios, categorías y factores.' },
     ],
     stock: [
       { id: 'stock_productos', titulo: 'Productos', icon: '🧰', desc: 'Catálogo, stock actual y ficha de movimientos.' },
@@ -142,8 +144,8 @@ function App() {
           )}
 
           {/* BOTÓN DE CERRAR SESIÓN */}
-          <button 
-            onClick={() => handleLoginStatus(false)} 
+          <button
+            onClick={() => handleLoginStatus(false)}
             style={{ marginLeft: '20px', background: '#334155', color: 'white', border: '1px solid #475569', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             Cerrar Sesión
@@ -201,8 +203,10 @@ function App() {
               <Categorias />
             ) : seccionActiva === 'configuracion_aumentos' ? (
               <Aumentos />
-              ) : seccionActiva === 'configuracion_proveedores' ? (
+            ) : seccionActiva === 'configuracion_proveedores' ? (
               <Proveedores />
+            ) : seccionActiva === 'configuracion_mo' ? (
+              <Mano_de_Obra />
             ) : seccionActiva === 'stock_productos' ? (
               <Productos />
             ) : seccionActiva === 'stock_almacenes' ? (
