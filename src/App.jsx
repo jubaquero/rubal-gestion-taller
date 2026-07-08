@@ -8,6 +8,7 @@ import Categorias from './components/Categorias';
 import Proveedores from './components/Proveedores';
 import Aumentos from './components/Aumentos';
 import Mano_de_Obra from './components/Mano_de_Obra';
+import Nomenclador from './components/Nomenclador';
 import Productos from './components/Productos';
 import Almacenes from './components/Almacenes';
 import Movimientos from './components/Movimientos';
@@ -70,6 +71,7 @@ function App() {
       { id: 'configuracion_marcas', titulo: 'Marcas', icon: '🏷️', desc: 'Gestión y alta de marcas de motores/vehículos.' },
       { id: 'configuracion_categorias', titulo: 'Categorías', icon: '🗂️', desc: 'Categorías de productos y repuestos.' },
       { id: 'configuracion_proveedores', titulo: 'Proveedores', icon: '🚛', desc: 'Administración, alta y búsqueda de Proveedores.' },
+      { id: 'configuracion_nomenclador', titulo: 'Nomenclador', icon: '🗃️', desc: 'Listado y alta de motores, tapas y categorías.' },
       { id: 'configuracion_mo', titulo: 'Mano de Obra', icon: '🛠️', desc: 'Gestión de servicios, categorías y factores.' },
     ],
     stock: [
@@ -205,6 +207,8 @@ function App() {
               <Aumentos />
             ) : seccionActiva === 'configuracion_proveedores' ? (
               <Proveedores />
+            ) : seccionActiva === 'configuracion_nomenclador' ? (
+              <Nomenclador />
             ) : seccionActiva === 'configuracion_mo' ? (
               <Mano_de_Obra />
             ) : seccionActiva === 'stock_productos' ? (
