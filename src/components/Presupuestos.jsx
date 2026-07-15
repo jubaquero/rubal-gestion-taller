@@ -321,7 +321,7 @@ function Presupuestos() {
         const filtrados = nomencladores.filter(n =>
             (tipoMotor === '' || n.tipo === tipoMotor) &&
             n.descripcion.toLowerCase().includes(term)
-        ).slice(0, 15); // Mostramos máximo 15 para no saturar la pantalla
+        ).slice(0, 25); // Mostramos máximo 15 para no saturar la pantalla
 
         setMotoresSugeridos(filtrados);
     }, [busquedaMotor, nomencladores, tipoMotor, motorSeleccionado]);
@@ -346,7 +346,7 @@ function Presupuestos() {
                 .from('bd_mo')
                 .select('*')
                 .ilike('servicio', `%${busquedaMO}%`)
-                .limit(10);
+                .limit(100);
             setMoSugeridas(data || []);
         };
         const timeoutId = setTimeout(buscarMO, 300);
@@ -377,7 +377,7 @@ function Presupuestos() {
                 .from('bd_nomenclador')
                 .select('*')
                 .ilike('descripcion', `%${busquedaMotor}%`)
-                .limit(20); // Traemos solo 20 resultados para ser rápidos
+                .limit(50); // Traemos solo 20 resultados para ser rápidos
 
             // Si el usuario seleccionó un "Tipo", lo aplicamos como filtro
             if (tipoMotor) {
