@@ -262,31 +262,43 @@ function Productos() {
           )}
 
 
-          <table style={s.tabla}>
+<table style={s.tabla}>
             <thead>
               <tr>
-                <th style={{ ...s.th, width: '10%' }}>Código</th>
-                <th style={{ ...s.th, width: '18%' }}>Categoría</th>
-                <th style={{ ...s.th, width: '18%' }}>Modelo</th>
-                <th style={{ ...s.th, width: '14%' }}>Marca</th>
-                <th style={{ ...s.th, width: '16%' }}>Cód. Fab</th>
-                <th style={{ ...s.th, width: '10%' }}>Medida</th>
+                <th style={{ ...s.th, width: '9%' }}>Código</th>
+                <th style={{ ...s.th, width: '23%' }}>Modelo / Categoría</th> 
+                <th style={{ ...s.th, width: '11%' }}>Marca</th>
+                <th style={{ ...s.th, width: '19%' }}>Cód. Fab</th>
+                <th style={{ ...s.th, width: '20%' }}>Medida</th>
                 <th style={{ ...s.th, width: '6%', textAlign: 'center' }}>Stock</th>
                 <th style={{ ...s.th, width: '12%', textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {productos.length === 0 ? (
-                <tr><td colSpan="8" style={{ padding: '15px', textAlign: 'center', color: '#64748b' }}>No se encontraron repuestos.</td></tr>
+                <tr><td colSpan="7" style={{ padding: '15px', textAlign: 'center', color: '#64748b' }}>No se encontraron repuestos.</td></tr>
               ) : (
                 productos.map(p => (
                   <tr key={p.id} style={s.tr} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fdf2f2'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                     <td style={s.td} title={p.codigo}>{p.codigo}</td>
-                    <td style={s.td} title={p.bd_tipos_producto?.nombre}>{p.bd_tipos_producto?.nombre || '-'}</td>
-                    <td style={s.td} title={p.modelo_auto}>{p.modelo_auto || '-'}</td>
+                    
+                    {/* Modelo / Categoría */}
+                    <td style={s.td}>
+                      <div style={{ fontWeight: 'bold', color: '#1e293b' }} title={p.modelo_auto}>
+                        {p.modelo_auto || '-'}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }} title={p.bd_tipos_producto?.nombre}>
+                        {p.bd_tipos_producto?.nombre || 'Sin categoría'}
+                      </div>
+                    </td>
+
                     <td style={s.td} title={p.bd_marcas?.nombre}>{p.bd_marcas?.nombre || '-'}</td>
                     <td style={s.td} title={p.codigo_fabricante}>{p.codigo_fabricante || '-'}</td>
-                    <td style={s.td} title={p.medida}>{p.medida || '-'}</td>
+                    
+                    {/* CELDA DE MEDIDA: con 24% de ancho y salto de línea si es necesario */}
+                    <td style={{ ...s.td, whiteSpace: 'normal', wordBreak: 'break-word', fontWeight: 'bold', color: '#0f172a' }} title={p.medida}>
+                      {p.medida || '-'}
+                    </td>
 
                     <td style={{ ...s.td, textAlign: 'center', fontWeight: 'bold', color: (p.stock_actual || 0) > 0 ? '#16a34a' : '#dc2626' }}>
                       {p.stock_actual || 0}
