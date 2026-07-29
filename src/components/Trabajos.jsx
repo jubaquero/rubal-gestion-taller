@@ -11,6 +11,7 @@ function Trabajos() {
   const [vista, setVista] = useState('listado');
   const [cargando, setCargando] = useState(true);
   const [filtroAño, setFiltroAño] = useState('TODOS');
+  const [filtroPresu, setFiltroPresu] = useState('TODOS');
 
   // Estados Edición y Visualización
   const [trabajoActivo, setTrabajoActivo] = useState(null);
@@ -263,16 +264,19 @@ function Trabajos() {
   const filtrarTrabajos = trabajos.filter(t => {
     const coincideEstado = filtroEstado === 'TODOS' || (filtroEstado === 'PENDIENTE' && t.estado !== 'TERMINADO') || (filtroEstado === 'TERMINADO' && t.estado === 'TERMINADO');
 
-    // Nueva lógica de año
     const añoTrabajo = t.fecha_inicio ? new Date(t.fecha_inicio).getFullYear().toString() : '';
     const coincideAño = filtroAño === 'TODOS' || añoTrabajo === filtroAño;
+
+    // 🌟 NUEVA LÓGICA DE PRESUPUESTO
+    const coincidePresu = filtroPresu === 'TODOS' || (filtroPresu === 'SIN PRESUPUESTO' && !t.id_presupuesto);
 
     const term = busqueda.toLowerCase();
     const strId = t.id.toString();
     const strCliente = `${t.bd_clientes?.nombre || ''} ${t.bd_clientes?.apellido || ''}`.toLowerCase();
     const strServicio = (t.bd_nomenclador?.descripcion || '').toLowerCase();
 
-    return coincideEstado && coincideAño && (strId.includes(term) || strCliente.includes(term) || strServicio.includes(term));
+    // 🌟 AGREGAMOS coincidePresu AL RETURN FINAL
+    return coincideEstado && coincideAño && coincidePresu && (strId.includes(term) || strCliente.includes(term) || strServicio.includes(term));
   });
 
   const handleCrearTrabajo = async (e) => {
@@ -393,14 +397,27 @@ function Trabajos() {
 
   const guardarCambiosTextoYEstado = async (nuevoEstado = null) => {
     const estadoFinal = nuevoEstado || trabajoActivo.estado;
+
+    // 🌟 NUEVA VALIDACIÓN: Si se está guardando como TERMINADO y no tiene presupuesto
+    if (estadoFinal === 'TERMINADO' && !trabajoActivo.id_presupuesto) {
+      const confirmar = window.confirm(
+        "⚠️ ¡ATENCIÓN!\n\nEste trabajo está en estado TERMINADO pero NO tiene ningún presupuesto vinculado.\n\nRecuerde que debe vincular un presupuesto para poder facturarlo y cobrarlo.\n\n¿Desea guardar los cambios de todos modos?"
+      );
+
+      // Si el usuario hace clic en "Cancelar", cortamos la función acá y no guardamos
+      if (!confirmar) {
+        return;
+      }
+    }
+
     const { error } = await supabase
       .from('bd_trabajos')
       .update({
         observaciones_trabajo: observacionesEdicion,
         estado: estadoFinal,
         id_presupuesto: trabajoActivo.id_presupuesto,
-        id_cliente: trabajoActivo.id_cliente,       // 🌟 IMPORTANTE: Guardar el nuevo cliente
-        id_nomenclador: trabajoActivo.id_nomenclador // 🌟 IMPORTANTE: Guardar el nuevo motor
+        id_cliente: trabajoActivo.id_cliente,
+        id_nomenclador: trabajoActivo.id_nomenclador
       })
       .eq('id', trabajoActivo.id);
 
@@ -590,30 +607,38 @@ function Trabajos() {
               }}>+ Nuevo Trabajo</button>
             </div>
 
-<div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '20px', background: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '20px', background: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
 
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-              <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Estado:</span>
-              {['TODOS', 'PENDIENTE', 'TERMINADO'].map(op => <button key={op} style={s.pill(filtroEstado === op)} onClick={() => setFiltroEstado(op)}>{op}</button>)}
-            </div>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Estado:</span>
+                {['TODOS', 'PENDIENTE', 'TERMINADO'].map(op => <button key={op} style={s.pill(filtroEstado === op)} onClick={() => setFiltroEstado(op)}>{op}</button>)}
+              </div>
 
-{/* Separador visual */}
-                            <div style={{ width: '1px', background: '#cbd5e1' }}></div>
-                            
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Año:</span>
-              <button style={s.pill(filtroAño === 'TODOS')} onClick={() => setFiltroAño('TODOS')}>TODOS</button>
-              {añosDisponibles.map(anio => (
-                <button
-                  key={anio}
-                  style={s.pill(filtroAño === anio)}
-                  onClick={() => setFiltroAño(anio)}
-                >
-                  {anio}
-                </button>
-              ))}
-            </div>
+              {/* Separador visual */}
+              <div style={{ width: '1px', background: '#cbd5e1' }}></div>
+
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Año:</span>
+                <button style={s.pill(filtroAño === 'TODOS')} onClick={() => setFiltroAño('TODOS')}>TODOS</button>
+                {añosDisponibles.map(anio => (
+                  <button
+                    key={anio}
+                    style={s.pill(filtroAño === anio)}
+                    onClick={() => setFiltroAño(anio)}
+                  >
+                    {anio}
+                  </button>
+                ))}
+              </div>
+              <div style={{ width: '1px', background: '#cbd5e1' }}></div>
+
+  <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+    <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Presupuesto:</span>
+    {['TODOS', 'SIN PRESUPUESTO'].map(op => (
+      <button key={op} style={s.pill(filtroPresu === op)} onClick={() => setFiltroPresu(op)}>{op}</button>
+    ))}
   </div>
+            </div>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
@@ -629,26 +654,27 @@ function Trabajos() {
               <tbody>
                 {filtrarTrabajos.map(t => (
                   <tr key={t.id}>
-                    <td style={{ ...s.td, fontWeight: 'bold' }}>
-  #{t.id}
-  {/* NUEVO: Distintivo si NO tiene presupuesto */}
-  {!t.id_presupuesto && t.estado === 'TERMINADO' && (
-    <span 
-      title="Sin presupuesto vinculado" 
-      style={{ 
-        marginLeft: '10px', 
-        fontSize: '0.7rem', 
-        background: '#fee2e2', 
-        color: '#ef4444', 
-        padding: '3px 6px', 
-        borderRadius: '4px',
-        border: '1px solid #f87171',
-        verticalAlign: 'middle'
-      }}>
-      S/P
-    </span>
-  )}
-</td>
+<td style={{ ...s.td, fontWeight: 'bold' }}>
+                      #{t.id}
+                      {/* NUEVO: Distintivo si NO tiene presupuesto */}
+                      {!t.id_presupuesto && (
+                        <span
+                          title="Sin presupuesto vinculado"
+                          style={{
+                            marginLeft: '10px',
+                            fontSize: '0.7rem',
+                            padding: '3px 6px',
+                            borderRadius: '4px',
+                            verticalAlign: 'middle',
+                            // Colores dinámicos basados en el estado del trabajo:
+                            background: t.estado === 'TERMINADO' ? '#fee2e2' : '#fef3c7',
+                            color: t.estado === 'TERMINADO' ? '#ef4444' : '#d97706',
+                            border: t.estado === 'TERMINADO' ? '1px solid #f87171' : '1px solid #fde68a'
+                          }}>
+                          S/P
+                        </span>
+                      )}
+                    </td>
                     <td style={s.td}>{t.bd_clientes?.nombre} {t.bd_clientes?.apellido}</td>
                     <td style={s.td}>{t.bd_nomenclador?.descripcion}</td>
                     <td style={s.td}>{formatearFecha(t.fecha_inicio)}</td>
@@ -817,23 +843,23 @@ function Trabajos() {
                                   setMostrarSugerencias(false);
                                 }}>
                                 {/* 🌟 RENDERIZADO EN LA LISTA DESPLEGABLE */}
-<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-  <div>
-    <b>N° {p.id}</b> ({formatearFecha(p.fecha_presupuesto)}) — <span style={{ color: '#475569', fontWeight: '500' }}>{motorDesc}</span>
-  </div>
-  {/* NUEVO: Etiqueta de estado con colores dinámicos */}
-  <span style={{
-    padding: '3px 8px', 
-    borderRadius: '4px', 
-    fontSize: '0.75rem', 
-    fontWeight: 'bold',
-    backgroundColor: p.estado === 'APROBADO' ? '#dcfce7' : '#fffbeb',
-    color: p.estado === 'APROBADO' ? '#16a34a' : '#d97706',
-    border: p.estado === 'APROBADO' ? '1px solid #bbf7d0' : '1px solid #fde68a'
-  }}>
-    {p.estado}
-  </span>
-</div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <div>
+                                    <b>N° {p.id}</b> ({formatearFecha(p.fecha_presupuesto)}) — <span style={{ color: '#475569', fontWeight: '500' }}>{motorDesc}</span>
+                                  </div>
+                                  {/* NUEVO: Etiqueta de estado con colores dinámicos */}
+                                  <span style={{
+                                    padding: '3px 8px',
+                                    borderRadius: '4px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 'bold',
+                                    backgroundColor: p.estado === 'APROBADO' ? '#dcfce7' : '#fffbeb',
+                                    color: p.estado === 'APROBADO' ? '#16a34a' : '#d97706',
+                                    border: p.estado === 'APROBADO' ? '1px solid #bbf7d0' : '1px solid #fde68a'
+                                  }}>
+                                    {p.estado}
+                                  </span>
+                                </div>
                               </li>
                             );
                           })
