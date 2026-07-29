@@ -629,7 +629,26 @@ function Trabajos() {
               <tbody>
                 {filtrarTrabajos.map(t => (
                   <tr key={t.id}>
-                    <td style={{ ...s.td, fontWeight: 'bold' }}>#{t.id}</td>
+                    <td style={{ ...s.td, fontWeight: 'bold' }}>
+  #{t.id}
+  {/* NUEVO: Distintivo si NO tiene presupuesto */}
+  {!t.id_presupuesto && t.estado === 'TERMINADO' && (
+    <span 
+      title="Sin presupuesto vinculado" 
+      style={{ 
+        marginLeft: '10px', 
+        fontSize: '0.7rem', 
+        background: '#fee2e2', 
+        color: '#ef4444', 
+        padding: '3px 6px', 
+        borderRadius: '4px',
+        border: '1px solid #f87171',
+        verticalAlign: 'middle'
+      }}>
+      S/P
+    </span>
+  )}
+</td>
                     <td style={s.td}>{t.bd_clientes?.nombre} {t.bd_clientes?.apellido}</td>
                     <td style={s.td}>{t.bd_nomenclador?.descripcion}</td>
                     <td style={s.td}>{formatearFecha(t.fecha_inicio)}</td>
@@ -798,7 +817,23 @@ function Trabajos() {
                                   setMostrarSugerencias(false);
                                 }}>
                                 {/* 🌟 RENDERIZADO EN LA LISTA DESPLEGABLE */}
-                                <b>N° {p.id}</b> ({formatearFecha(p.fecha_presupuesto)}) — <span style={{ color: '#475569', fontWeight: '500' }}>{motorDesc}</span>
+<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+  <div>
+    <b>N° {p.id}</b> ({formatearFecha(p.fecha_presupuesto)}) — <span style={{ color: '#475569', fontWeight: '500' }}>{motorDesc}</span>
+  </div>
+  {/* NUEVO: Etiqueta de estado con colores dinámicos */}
+  <span style={{
+    padding: '3px 8px', 
+    borderRadius: '4px', 
+    fontSize: '0.75rem', 
+    fontWeight: 'bold',
+    backgroundColor: p.estado === 'APROBADO' ? '#dcfce7' : '#fffbeb',
+    color: p.estado === 'APROBADO' ? '#16a34a' : '#d97706',
+    border: p.estado === 'APROBADO' ? '1px solid #bbf7d0' : '1px solid #fde68a'
+  }}>
+    {p.estado}
+  </span>
+</div>
                               </li>
                             );
                           })
