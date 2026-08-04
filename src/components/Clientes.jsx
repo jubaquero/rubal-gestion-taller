@@ -12,7 +12,7 @@ function Clientes() {
   const [modalFichaVisible, setModalFichaVisible] = useState(false);
   const [clienteEditando, setClienteEditando] = useState(null);
   const [clienteVerFicha, setClienteVerFicha] = useState(null);
-  
+
   const [formData, setFormData] = useState({
     nombre: '', apellido: '', direccion: '', localidad: '', telefono: '', cuil_cuit: '', es_empresa: false
   });
@@ -60,16 +60,16 @@ function Clientes() {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ 
-      ...formData, 
-      [name]: type === 'checkbox' ? checked : value 
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
     });
   };
 
   const guardarCliente = async (e) => {
     e.preventDefault();
     const datosAGuardar = { ...formData };
-    
+
     if (datosAGuardar.es_empresa) {
       datosAGuardar.apellido = '';
     }
@@ -81,7 +81,7 @@ function Clientes() {
       if (clienteEditando && cli.id === clienteEditando.id) return false;
       const nombreDB = (cli.nombre || '').trim().toLowerCase();
       const apellidoDB = (cli.apellido || '').trim().toLowerCase();
-      
+
       if (datosAGuardar.es_empresa) {
         return nombreDB === nombreInput;
       } else {
@@ -94,7 +94,7 @@ function Clientes() {
       const confirmar = window.confirm(
         `⚠️ ¡ATENCIÓN!\n\nYa existe un cliente registrado con el nombre "${nombreMostrar.trim()}".\n\n¿Estás seguro de que querés guardarlo de todas formas?`
       );
-      if (!confirmar) return; 
+      if (!confirmar) return;
     }
 
     if (clienteEditando) {
@@ -154,7 +154,7 @@ function Clientes() {
 
   return (
     <div className="modulo-clientes">
-      
+
       <div className="clientes-header">
         <input
           type="text"
@@ -169,10 +169,34 @@ function Clientes() {
         </button>
       </div>
 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginBottom: '10px'
+      }}>
+        <div style={{
+          backgroundColor: '#e8f5e9',
+          color: '#2e7d32',
+          padding: '6px 16px',
+          borderRadius: '20px',
+          fontSize: '0.9rem',
+          fontWeight: 'bold',
+          border: '1px solid #c8e6c9',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span>#️⃣</span>
+          Total de clientes: {clientesFiltrados.length}
+        </div>
+      </div>
+
       <div className="tabla-contenedor">
         {cargando ? (
           <p className="mensaje-carga">Cargando clientes ⚙️</p>
         ) : (
+
+
           <table className="tabla-moderna">
             <thead>
               <tr>
@@ -189,7 +213,7 @@ function Clientes() {
                   <tr key={cli.id}>
                     <td className="col-nombre">
                       {cli.nombre} {cli.apellido && !cli.es_empresa ? cli.apellido : ''}
-                      {cli.es_empresa && <span style={{fontSize:'0.75rem', marginLeft:'8px', backgroundColor:'#e2e8f0', padding:'2px 6px', borderRadius:'4px', color:'#475569'}}>Empresa</span>}
+                      {cli.es_empresa && <span style={{ fontSize: '0.75rem', marginLeft: '8px', backgroundColor: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', color: '#475569' }}>Empresa</span>}
                     </td>
                     <td>{cli.localidad || '-'}</td>
                     <td>{cli.telefono || '-'}</td>
@@ -221,19 +245,19 @@ function Clientes() {
         <div className="modal-overlay">
           <div className="modal-contenido">
             <h2>{clienteEditando ? '✏️ Editar Ficha de Cliente' : '👤 Nuevo Cliente'}</h2>
-            
+
             <form onSubmit={guardarCliente}>
-              <div className="form-grid" style={{marginBottom: '15px'}}>
-                 <div className="input-group columna-entera" style={{flexDirection: 'row', alignItems: 'center', gap: '10px', backgroundColor: '#f8fafc', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0'}}>
-                  <input 
-                    type="checkbox" 
-                    name="es_empresa" 
+              <div className="form-grid" style={{ marginBottom: '15px' }}>
+                <div className="input-group columna-entera" style={{ flexDirection: 'row', alignItems: 'center', gap: '10px', backgroundColor: '#f8fafc', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <input
+                    type="checkbox"
+                    name="es_empresa"
                     id="es_empresa"
-                    checked={formData.es_empresa} 
-                    onChange={handleInputChange} 
-                    style={{width: '18px', height: '18px', cursor: 'pointer'}}
+                    checked={formData.es_empresa}
+                    onChange={handleInputChange}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                   />
-                  <label htmlFor="es_empresa" style={{cursor: 'pointer', margin: 0, fontSize: '1rem', color: '#0f172a'}}>
+                  <label htmlFor="es_empresa" style={{ cursor: 'pointer', margin: 0, fontSize: '1rem', color: '#0f172a' }}>
                     🏢 Este cliente es una Empresa (Razón Social)
                   </label>
                 </div>
@@ -244,14 +268,14 @@ function Clientes() {
                   <label>{formData.es_empresa ? 'Razón Social *' : 'Nombre *'}</label>
                   <input type="text" name="nombre" required value={formData.nombre} onChange={handleInputChange} autoFocus />
                 </div>
-                
+
                 {!formData.es_empresa && (
                   <div className="input-group">
                     <label>Apellido *</label>
                     <input type="text" name="apellido" required value={formData.apellido} onChange={handleInputChange} />
                   </div>
                 )}
-                
+
                 <div className="input-group">
                   <label>Teléfono</label>
                   <input type="text" name="telefono" value={formData.telefono} onChange={handleInputChange} />
@@ -261,7 +285,7 @@ function Clientes() {
                   <label>CUIT / CUIL</label>
                   <input type="text" name="cuil_cuit" value={formData.cuil_cuit} onChange={handleInputChange} />
                 </div>
-                
+
                 <div className="input-group columna-entera">
                   <label>Dirección</label>
                   <input type="text" name="direccion" value={formData.direccion} onChange={handleInputChange} />
@@ -293,7 +317,7 @@ function Clientes() {
               <p><strong>Teléfono de Contacto:</strong> {clienteVerFicha.telefono || 'No registrado'}</p>
               <p><strong>Dirección Física:</strong> {clienteVerFicha.direccion || 'No registrada'}</p>
               <p><strong>Localidad:</strong> {clienteVerFicha.localidad || 'No registrada'}</p>
-              
+
               {/* Espacio reservado para balances contables futuros */}
               <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px dashed #cbd5e1', fontSize: '0.85rem', color: '#64748b' }}>
                 ℹ️ Próximamente vas a poder auditar el saldo corriente, historial analítico de trabajos y presupuestos aprobados desde acá.

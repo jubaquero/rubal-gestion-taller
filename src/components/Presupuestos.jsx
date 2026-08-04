@@ -695,12 +695,12 @@ function Presupuestos() {
         }
     };
 
-const formatDinero = (num) => {
-    return new Intl.NumberFormat('es-AR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(Number(num || 0));
-};
+    const formatDinero = (num) => {
+        return new Intl.NumberFormat('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(Number(num || 0));
+    };
     return (
         <div style={{ padding: '20px' }}>
             <div style={s.card}>
@@ -743,6 +743,29 @@ const formatDinero = (num) => {
                                 {['TODOS', 'PENDIENTE', 'APROBADO', 'RECHAZADO'].map(op => (
                                     <button key={op} style={s.pill(filtroEstado === op)} onClick={() => setFiltroEstado(op)}>{op}</button>
                                 ))}
+                            </div>
+
+                        </div>
+
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            marginBottom: '10px'
+                        }}>
+                            <div style={{
+                                backgroundColor: '#e8f5e9',
+                                color: '#2e7d32',
+                                padding: '6px 16px',
+                                borderRadius: '20px',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                border: '1px solid #c8e6c9',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                                <span>#️⃣</span>
+                                Total de presupuestos: {filtrarPresupuestos.length}
                             </div>
                         </div>
 
@@ -794,7 +817,7 @@ const formatDinero = (num) => {
                     </>
                 )}
 
-{/* --- VISTA COMPLETA DE CARGA --- */}
+                {/* --- VISTA COMPLETA DE CARGA --- */}
                 {(vista === 'nuevo' || vista === 'editar') && (
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '10px', alignItems: 'center' }}>
@@ -803,17 +826,17 @@ const formatDinero = (num) => {
                                 <h2 style={{ margin: 0 }}>{vista === 'nuevo' ? '✨ Creación de Presupuesto' : `✏️ Editar Presupuesto #${presupuestoActivo?.id}`}</h2>
 
                                 {/* SELECTOR DE ESTADO CON COLORES DINÁMICOS */}
-                                <select 
-                                    style={{ 
-                                        padding: '6px 12px', 
-                                        borderRadius: '8px', 
+                                <select
+                                    style={{
+                                        padding: '6px 12px',
+                                        borderRadius: '8px',
                                         border: '1px solid #cbd5e1',
-                                        fontWeight: 'bold', 
+                                        fontWeight: 'bold',
                                         fontSize: '0.9rem',
                                         cursor: 'pointer',
                                         outline: 'none',
-                                        backgroundColor: estadoPresupuesto === 'APROBADO' ? '#dcfce7' : estadoPresupuesto === 'RECHAZADO' ? '#fee2e2' : '#fef9c3', 
-                                        color: estadoPresupuesto === 'APROBADO' ? '#166534' : estadoPresupuesto === 'RECHAZADO' ? '#991b1b' : '#854d0e' 
+                                        backgroundColor: estadoPresupuesto === 'APROBADO' ? '#dcfce7' : estadoPresupuesto === 'RECHAZADO' ? '#fee2e2' : '#fef9c3',
+                                        color: estadoPresupuesto === 'APROBADO' ? '#166534' : estadoPresupuesto === 'RECHAZADO' ? '#991b1b' : '#854d0e'
                                     }}
                                     value={estadoPresupuesto}
                                     onChange={(e) => setEstadoPresupuesto(e.target.value)}
@@ -1073,37 +1096,37 @@ const formatDinero = (num) => {
                             </div>
 
                             {/* BLOQUE PRODUCTOS / REPUESTOS LIBRES */}
-{/* BLOQUE PRODUCTOS / REPUESTOS LIBRES */}
-                                <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
-                                    
-                                    {/* Título y Mensaje de Ayuda alineados */}
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '15px' }}>
-                                        <h3 style={{ marginTop: 0, marginBottom: 0, color: '#dc2626', fontSize: '1.1rem' }}>📦 Repuestos</h3>
-                                        <span style={{ fontSize: '0.8rem', color: '#64748b', fontStyle: 'italic' }}>
-                                            * Ingresar precio sin puntos de miles (Ej: 15000.50)
-                                        </span>
+                            {/* BLOQUE PRODUCTOS / REPUESTOS LIBRES */}
+                            <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
+
+                                {/* Título y Mensaje de Ayuda alineados */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '15px' }}>
+                                    <h3 style={{ marginTop: 0, marginBottom: 0, color: '#dc2626', fontSize: '1.1rem' }}>📦 Repuestos</h3>
+                                    <span style={{ fontSize: '0.8rem', color: '#64748b', fontStyle: 'italic' }}>
+                                        * Ingresar precio sin puntos de miles (Ej: 15000.50)
+                                    </span>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                                    <input type="text" style={{ ...s.input, flex: 1 }} placeholder="Escriba la descripción del repuesto o pieza a solicitar..." value={prodTextoLibre} onChange={e => setProdTextoLibre(e.target.value)} />
+
+                                    <input type="number" min="1" style={{ ...s.input, width: '80px' }} placeholder="Cant" title="Cantidad" value={cantProd} onChange={e => setCantProd(Number(e.target.value))} />
+
+                                    <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '0 10px' }} title="Escriba el número seguido, sin puntos para los miles.">
+                                        <span style={{ color: '#64748b', fontWeight: 'bold' }}>$</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="any" /* <-- ESTO ES CLAVE: Le dice al navegador que acepte cualquier decimal */
+                                            style={{ padding: '10px', border: 'none', width: '100px', outline: 'none' }}
+                                            placeholder="Unitario"
+                                            value={precioUnitarioProd === 0 ? '' : precioUnitarioProd} /* Mejora: si es 0 muestra vacío para no molestar visualmente */
+                                            onChange={e => setPrecioUnitarioProd(e.target.value ? Number(e.target.value) : 0)}
+                                        />
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                                        <input type="text" style={{ ...s.input, flex: 1 }} placeholder="Escriba la descripción del repuesto o pieza a solicitar..." value={prodTextoLibre} onChange={e => setProdTextoLibre(e.target.value)} />
-                                        
-                                        <input type="number" min="1" style={{ ...s.input, width: '80px' }} placeholder="Cant" title="Cantidad" value={cantProd} onChange={e => setCantProd(Number(e.target.value))} />
-                                        
-                                        <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '0 10px' }} title="Escriba el número seguido, sin puntos para los miles.">
-                                            <span style={{ color: '#64748b', fontWeight: 'bold' }}>$</span>
-                                            <input 
-                                                type="number" 
-                                                min="0" 
-                                                step="any" /* <-- ESTO ES CLAVE: Le dice al navegador que acepte cualquier decimal */
-                                                style={{ padding: '10px', border: 'none', width: '100px', outline: 'none' }} 
-                                                placeholder="Unitario" 
-                                                value={precioUnitarioProd === 0 ? '' : precioUnitarioProd} /* Mejora: si es 0 muestra vacío para no molestar visualmente */
-                                                onChange={e => setPrecioUnitarioProd(e.target.value ? Number(e.target.value) : 0)} 
-                                            />
-                                        </div>
-                                        
-                                        <button style={s.btnPr} onClick={handleAgregarProductoLibre}>+</button>
-                                    </div>
+                                    <button style={s.btnPr} onClick={handleAgregarProductoLibre}>+</button>
+                                </div>
 
                                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                     <thead>
@@ -1236,7 +1259,7 @@ const formatDinero = (num) => {
                     </div>
                 )}
 
-{/* --- VISTA DE IMPRESIÓN (A4) --- */}
+                {/* --- VISTA DE IMPRESIÓN (A4) --- */}
                 {vista === 'ver' && presupuestoActivo && (
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#e2e8f0', padding: '20px 0', borderRadius: '8px' }}>
 

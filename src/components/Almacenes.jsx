@@ -90,6 +90,29 @@ function Almacenes() {
                             <input style={s.input} placeholder="🔍 Buscar..." value={busqueda} onChange={e => setBusqueda(e.target.value)} />
                             <button style={s.btnPrincipal} onClick={() => { setForm({}); setVista('formulario'); }}>➕ Nuevo</button>
                         </div>
+
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            marginBottom: '10px'
+                        }}>
+                            <div style={{
+                                backgroundColor: '#e8f5e9',
+                                color: '#2e7d32',
+                                padding: '6px 16px',
+                                borderRadius: '20px',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                border: '1px solid #c8e6c9',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                                <span>#️⃣</span>
+                                Total de almacenes: {almacenesFiltrados.length}
+                            </div>
+                        </div>
+
                         <table style={s.tabla}>
                             <thead>
                                 <tr>
@@ -102,10 +125,10 @@ function Almacenes() {
                             <tbody>
                                 {almacenesFiltrados.map(a => (
                                     <tr key={a.id}>
-      <td style={s.td}>{a.nombre}</td>
-      <td style={s.td}>{a.ubicacion}</td>
-      <td style={{ ...s.td, textAlign: 'center' }}>{a.hay_lugar ? '✅' : '❌'}</td>
-      <td style={{ ...s.td, textAlign: 'center' }}>
+                                        <td style={s.td}>{a.nombre}</td>
+                                        <td style={s.td}>{a.ubicacion}</td>
+                                        <td style={{ ...s.td, textAlign: 'center' }}>{a.hay_lugar ? '✅' : '❌'}</td>
+                                        <td style={{ ...s.td, textAlign: 'center' }}>
                                             <div style={s.acciones}>
                                                 <span style={{ cursor: 'pointer' }} onClick={() => cargarFicha(a)} title="Ver Ficha">👁️</span>
                                                 <span style={{ cursor: 'pointer' }} onClick={() => { setForm(a); setVista('formulario'); }} title="Editar">✏️</span>
@@ -141,31 +164,31 @@ function Almacenes() {
                             </>
                         ) : (
                             <>
-<h4>📦 Productos actuales:</h4>
-                <table style={s.tabla}>
-                  <thead>
-                    <tr>
-                      <th style={s.th}>Código</th>
-                      <th style={s.th}>Tipo</th>
-                      <th style={s.th}>Modelo Auto</th>
-                      <th style={s.th}>Marca</th>
-                      <th style={s.th}>Medida</th>
-                      <th style={s.th}>Stock</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stockActual.map(p => (
-                      <tr key={p.id}>
-                        <td style={s.td}>{p.codigo}</td>
-                        <td style={s.td}>{p.bd_tipos_producto?.nombre || '-'}</td>
-                        <td style={s.td}>{p.modelo_auto || '-'}</td>
-                        <td style={s.td}>{p.bd_marcas?.nombre || '-'}</td>
-                        <td style={s.td}>{p.medida || '-'}</td>
-                        <td style={s.td}><b>{p.total}</b></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                                <h4>📦 Productos actuales:</h4>
+                                <table style={s.tabla}>
+                                    <thead>
+                                        <tr>
+                                            <th style={s.th}>Código</th>
+                                            <th style={s.th}>Tipo</th>
+                                            <th style={s.th}>Modelo Auto</th>
+                                            <th style={s.th}>Marca</th>
+                                            <th style={s.th}>Medida</th>
+                                            <th style={s.th}>Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {stockActual.map(p => (
+                                            <tr key={p.id}>
+                                                <td style={s.td}>{p.codigo}</td>
+                                                <td style={s.td}>{p.bd_tipos_producto?.nombre || '-'}</td>
+                                                <td style={s.td}>{p.modelo_auto || '-'}</td>
+                                                <td style={s.td}>{p.bd_marcas?.nombre || '-'}</td>
+                                                <td style={s.td}>{p.medida || '-'}</td>
+                                                <td style={s.td}><b>{p.total}</b></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </>
                         )}
                         <button style={s.btnSecundario} onClick={() => setVista('listado')}>🔙 Volver</button>

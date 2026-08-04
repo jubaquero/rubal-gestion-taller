@@ -632,13 +632,36 @@ function Trabajos() {
               </div>
               <div style={{ width: '1px', background: '#cbd5e1' }}></div>
 
-  <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-    <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Presupuesto:</span>
-    {['TODOS', 'SIN PRESUPUESTO'].map(op => (
-      <button key={op} style={s.pill(filtroPresu === op)} onClick={() => setFiltroPresu(op)}>{op}</button>
-    ))}
-  </div>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                <span style={{ fontWeight: 'bold', alignSelf: 'center', marginRight: '5px' }}>Presupuesto:</span>
+                {['TODOS', 'SIN PRESUPUESTO'].map(op => (
+                  <button key={op} style={s.pill(filtroPresu === op)} onClick={() => setFiltroPresu(op)}>{op}</button>
+                ))}
+              </div>
             </div>
+
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginBottom: '10px'
+            }}>
+              <div style={{
+                backgroundColor: '#e8f5e9',
+                color: '#2e7d32',
+                padding: '6px 16px',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                border: '1px solid #c8e6c9',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>#️⃣</span>
+                Total de trabajos: {filtrarTrabajos.length}
+              </div>
+            </div>
+            
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
@@ -654,7 +677,7 @@ function Trabajos() {
               <tbody>
                 {filtrarTrabajos.map(t => (
                   <tr key={t.id}>
-<td style={{ ...s.td, fontWeight: 'bold' }}>
+                    <td style={{ ...s.td, fontWeight: 'bold' }}>
                       #{t.id}
                       {/* NUEVO: Distintivo si NO tiene presupuesto */}
                       {!t.id_presupuesto && (
@@ -741,9 +764,26 @@ function Trabajos() {
                 <span style={{
                   display: 'inline-block', margin: '5px 0', padding: '4px 12px', borderRadius: '6px', fontSize: '0.9rem', fontWeight: 'bold',
                   backgroundColor: trabajoActivo.estado === 'TERMINADO' ? '#dcfce7' : '#f1f5f9',
-                  color: trabajoActivo.estado === 'TERMINADO' ? '#16a34a' : '#475569'
+                  color: trabajoActivo.estado === 'TERMINADO' ? '#16a34a' : '#cc5868'
                 }}>
                   Estado: {trabajoActivo.estado}
+                </span>
+
+                {/* FECHA */}
+                <span style={{
+                  display: 'inline-block', margin: '5px 0', padding: '4px 12px', borderRadius: '6px', fontSize: '0.9rem',  
+                  color: '#475569'
+                }}>
+                 <b>DESDE:</b>  {formatearFecha(trabajoActivo.fecha_inicio)}
+                 
+                </span>
+
+                {/* FECHA */}
+                <span style={{
+                  display: 'inline-block', margin: '5px 0', padding: '4px 12px', borderRadius: '6px', fontSize: '0.9rem',
+                  color: '#475569'
+                }}>
+                  <b>HASTA:</b> {trabajoActivo.fecha_fin ? formatearFecha(trabajoActivo.fecha_fin) : 'Pendiente'}
                 </span>
 
                 {/* SELECT EDITABLE DE CLIENTE */}

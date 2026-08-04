@@ -150,6 +150,29 @@ function Comisiones() {
                                 setVista('crear');
                             }}>+ Nueva Comisión</button>
                         </div>
+
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            marginBottom: '10px'
+                        }}>
+                            <div style={{
+                                backgroundColor: '#e8f5e9',
+                                color: '#2e7d32',
+                                padding: '6px 16px',
+                                borderRadius: '20px',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                border: '1px solid #c8e6c9',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                                <span>#️⃣</span>
+                                Total de comisiones: {comisiones.length}
+                            </div>
+                        </div>
+
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr style={{ borderBottom: '2px solid #f1f5f9' }}>

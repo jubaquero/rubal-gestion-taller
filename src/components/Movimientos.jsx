@@ -17,7 +17,7 @@ function Movimientos() {
     const [modalEditarMov, setModalEditarMov] = useState(null); // { movimiento, cantidad, id_almacen, comentario }
 
     const [almacenesFiltradosEgreso, setAlmacenesFiltradosEgreso] = useState([]);
-const [almacenesDelProducto, setAlmacenesDelProducto] = useState([]);
+    const [almacenesDelProducto, setAlmacenesDelProducto] = useState([]);
 
     // ESTILOS PREMIUM CONCORDANTES CON LA IDENTIDAD DE RUBAL
     const s = {
@@ -208,6 +208,28 @@ const [almacenesDelProducto, setAlmacenesDelProducto] = useState([]);
                     )}
                 </div>
 
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    marginBottom: '10px'
+                }}>
+                    <div style={{
+                        backgroundColor: '#e8f5e9',
+                        color: '#2e7d32',
+                        padding: '6px 16px',
+                        borderRadius: '20px',
+                        fontSize: '0.9rem',
+                        fontWeight: 'bold',
+                        border: '1px solid #c8e6c9',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>#️⃣</span>
+                        Total de movimientos: {productos.length}
+                    </div>
+                </div>
+
                 {/* TABLA DE PRODUCTOS FILTRADOS */}
                 {tipoSeleccionado ? (
                     <table style={s.tabla}>
@@ -237,53 +259,53 @@ const [almacenesDelProducto, setAlmacenesDelProducto] = useState([]);
                                             {p.stock_actual || 0}
                                         </td>
 
-<td style={s.td}>
-                      <div style={s.acciones}>
-                        {/* BOTÓN INGRESO (➕) - AHORA TAMBIÉN BUSCA HISTORIAL */}
-                        <span 
-                          title="Ingreso Stock" 
-                          onClick={async () => {
-                            const { data } = await supabase
-                              .from('bd_movimientos')
-                              .select('id_almacen, bd_almacenes(nombre)')
-                              .eq('id_producto', p.id);
+                                        <td style={s.td}>
+                                            <div style={s.acciones}>
+                                                {/* BOTÓN INGRESO (➕) - AHORA TAMBIÉN BUSCA HISTORIAL */}
+                                                <span
+                                                    title="Ingreso Stock"
+                                                    onClick={async () => {
+                                                        const { data } = await supabase
+                                                            .from('bd_movimientos')
+                                                            .select('id_almacen, bd_almacenes(nombre)')
+                                                            .eq('id_producto', p.id);
 
-                            const mapaAlmacenes = new Map();
-                            (data || []).forEach(m => {
-                              if (m.id_almacen && m.bd_almacenes) {
-                                mapaAlmacenes.set(m.id_almacen, { id: m.id_almacen, nombre: m.bd_almacenes.nombre });
-                              }
-                            });
-                            setAlmacenesDelProducto(Array.from(mapaAlmacenes.values()));
-                            setModalOperacion({ producto: p, operacion: 'ingreso' });
-                          }} 
-                          style={{ cursor: 'pointer', fontSize: '1.0rem' }}
-                        >➕</span>
+                                                        const mapaAlmacenes = new Map();
+                                                        (data || []).forEach(m => {
+                                                            if (m.id_almacen && m.bd_almacenes) {
+                                                                mapaAlmacenes.set(m.id_almacen, { id: m.id_almacen, nombre: m.bd_almacenes.nombre });
+                                                            }
+                                                        });
+                                                        setAlmacenesDelProducto(Array.from(mapaAlmacenes.values()));
+                                                        setModalOperacion({ producto: p, operacion: 'ingreso' });
+                                                    }}
+                                                    style={{ cursor: 'pointer', fontSize: '1.0rem' }}
+                                                >➕</span>
 
-                        {/* BOTÓN EGRESO (➖) */}
-                        <span 
-                          title="Egreso Stock" 
-                          onClick={async () => {
-                            const { data } = await supabase
-                              .from('bd_movimientos')
-                              .select('id_almacen, bd_almacenes(nombre)')
-                              .eq('id_producto', p.id);
+                                                {/* BOTÓN EGRESO (➖) */}
+                                                <span
+                                                    title="Egreso Stock"
+                                                    onClick={async () => {
+                                                        const { data } = await supabase
+                                                            .from('bd_movimientos')
+                                                            .select('id_almacen, bd_almacenes(nombre)')
+                                                            .eq('id_producto', p.id);
 
-                            const mapaAlmacenes = new Map();
-                            (data || []).forEach(m => {
-                              if (m.id_almacen && m.bd_almacenes) {
-                                mapaAlmacenes.set(m.id_almacen, { id: m.id_almacen, nombre: m.bd_almacenes.nombre });
-                              }
-                            });
-                            setAlmacenesDelProducto(Array.from(mapaAlmacenes.values()));
-                            setModalOperacion({ producto: p, operacion: 'egreso' });
-                          }} 
-                          style={{ cursor: 'pointer', fontSize: '1.0rem' }}
-                        >➖</span>
+                                                        const mapaAlmacenes = new Map();
+                                                        (data || []).forEach(m => {
+                                                            if (m.id_almacen && m.bd_almacenes) {
+                                                                mapaAlmacenes.set(m.id_almacen, { id: m.id_almacen, nombre: m.bd_almacenes.nombre });
+                                                            }
+                                                        });
+                                                        setAlmacenesDelProducto(Array.from(mapaAlmacenes.values()));
+                                                        setModalOperacion({ producto: p, operacion: 'egreso' });
+                                                    }}
+                                                    style={{ cursor: 'pointer', fontSize: '1.0rem' }}
+                                                >➖</span>
 
-                        <span title="Ver Movimientos / Auditar" onClick={() => handleAbrirHistorial(p)} style={{ cursor: 'pointer', fontSize: '1.0rem' }}>👁️</span>
-                      </div>
-                    </td>
+                                                <span title="Ver Movimientos / Auditar" onClick={() => handleAbrirHistorial(p)} style={{ cursor: 'pointer', fontSize: '1.0rem' }}>👁️</span>
+                                            </div>
+                                        </td>
 
                                     </tr>
                                 ))
@@ -315,48 +337,48 @@ const [almacenesDelProducto, setAlmacenesDelProducto] = useState([]);
                             </div>
 
                             {/* ACÁ ESTÁ EL SELECT MODIFICADO */}
-<div style={s.formFila}>
-                <label style={s.formLabel}>Almacén:</label>
-                <select name="almacen" required style={s.formInput}>
-                  <option value="">-- Seleccionar Depósito --</option>
-                  
-                  {modalOperacion.operacion === 'egreso' ? (
-                    // ➖ CASO EGRESO: Solo donde ya hay/hubo stock
-                    almacenesDelProducto.length === 0 ? (
-                      <option disabled value="">⚠️ Este repuesto no registra stock en ningún almacén</option>
-                    ) : (
-                      almacenesDelProducto.map(a => (
-                        <option key={a.id} value={a.id}>{a.nombre}</option>
-                      ))
-                    )
-                  ) : (
-                    // ➕ CASO INGRESO: Inteligente con prioritarios primero
-                    <>
-                      {/* 1. Almacenes frecuentes/históricos */}
-                      {almacenesDelProducto.map(a => (
-                        <option key={`frec-${a.id}`} value={a.id} style={{ fontWeight: 'bold', color: '#1e3a8a' }}>
-                          ⭐ {a.nombre} (Habitual)
-                        </option>
-                      ))}
-                      
-                      {/* Línea divisoria si hay almacenes habituales y generales */}
-                      {almacenesDelProducto.length > 0 && (
-                        <option disabled>──────────────────────────────</option>
-                      )}
-                      
-                      {/* 2. El resto de los almacenes del taller (excluyendo los que ya se mostraron arriba) */}
-                      {almacenes
-                        .filter(almacenGral => !almacenesDelProducto.some(h => h.id === almacenGral.id))
-                        .map(a => (
-                          <option key={a.id} value={a.id}>
-                            {a.nombre} {a.hay_lugar ? '' : '(Lleno)'}
-                          </option>
-                        ))
-                      }
-                    </>
-                  )}
-                </select>
-              </div>
+                            <div style={s.formFila}>
+                                <label style={s.formLabel}>Almacén:</label>
+                                <select name="almacen" required style={s.formInput}>
+                                    <option value="">-- Seleccionar Depósito --</option>
+
+                                    {modalOperacion.operacion === 'egreso' ? (
+                                        // ➖ CASO EGRESO: Solo donde ya hay/hubo stock
+                                        almacenesDelProducto.length === 0 ? (
+                                            <option disabled value="">⚠️ Este repuesto no registra stock en ningún almacén</option>
+                                        ) : (
+                                            almacenesDelProducto.map(a => (
+                                                <option key={a.id} value={a.id}>{a.nombre}</option>
+                                            ))
+                                        )
+                                    ) : (
+                                        // ➕ CASO INGRESO: Inteligente con prioritarios primero
+                                        <>
+                                            {/* 1. Almacenes frecuentes/históricos */}
+                                            {almacenesDelProducto.map(a => (
+                                                <option key={`frec-${a.id}`} value={a.id} style={{ fontWeight: 'bold', color: '#1e3a8a' }}>
+                                                    ⭐ {a.nombre} (Habitual)
+                                                </option>
+                                            ))}
+
+                                            {/* Línea divisoria si hay almacenes habituales y generales */}
+                                            {almacenesDelProducto.length > 0 && (
+                                                <option disabled>──────────────────────────────</option>
+                                            )}
+
+                                            {/* 2. El resto de los almacenes del taller (excluyendo los que ya se mostraron arriba) */}
+                                            {almacenes
+                                                .filter(almacenGral => !almacenesDelProducto.some(h => h.id === almacenGral.id))
+                                                .map(a => (
+                                                    <option key={a.id} value={a.id}>
+                                                        {a.nombre} {a.hay_lugar ? '' : '(Lleno)'}
+                                                    </option>
+                                                ))
+                                            }
+                                        </>
+                                    )}
+                                </select>
+                            </div>
                             {/* FIN DEL SELECT MODIFICADO */}
 
                             <div style={s.formFila}>
@@ -380,18 +402,39 @@ const [almacenesDelProducto, setAlmacenesDelProducto] = useState([]);
                             📊 Historial del Producto: {modalHistorial.producto.codigo}
                         </h3>
 
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            marginBottom: '10px'
+                        }}>
+                            <div style={{
+                                backgroundColor: '#e8f5e9',
+                                color: '#2e7d32',
+                                padding: '6px 16px',
+                                borderRadius: '20px',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                border: '1px solid #c8e6c9',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                                <span>#️⃣</span>
+                                Total de movimientos: {movimientosProducto.length}
+                            </div>
+                        </div>
 
                         <table style={s.tabla}>
-<thead>
+                            <thead>
                                 <tr>
                                     {/* Le sacamos un poco a Fecha, Operación y Cantidad que son datos cortos */}
                                     <th style={{ ...s.th, width: '12%' }}>Fecha</th>
                                     <th style={{ ...s.th, width: '12%' }}>Operación</th>
                                     <th style={{ ...s.th, width: '10%' }}>Cantidad</th>
-                                    
+
                                     {/* Le damos mucho más espacio al Almacén (pasó del 20% al 32%) */}
                                     <th style={{ ...s.th, width: '32%' }}>Almacén</th>
-                                    
+
                                     <th style={{ ...s.th, width: '22%' }}>Comentario/Detalle</th>
                                     <th style={{ ...s.th, width: '12%', textAlign: 'center' }}>Acciones</th>
                                 </tr>

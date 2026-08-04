@@ -99,7 +99,7 @@ function Recibos() {
                 if (error) throw error;
                 alert("✅ Recibo guardado correctamente.");
             }
-            
+
             setVista('listado');
             cargarDatos();
         } catch (error) {
@@ -122,9 +122,9 @@ function Recibos() {
         const nombreCliente = `${r.bd_clientes?.nombre || ''} ${r.bd_clientes?.apellido || ''}`;
         const fecha = new Date(r.fecha_recibo).toLocaleDateString('es-AR', { timeZone: 'UTC' }).replace(/\//g, '-');
         const tituloArchivo = `Recibo N° ${r.id} - ${nombreCliente} - ${fecha}`;
-        
+
         const ventana = window.open('', '_blank');
-        
+
         ventana.document.write(`
             <html>
                 <head>
@@ -191,6 +191,29 @@ function Recibos() {
                                 setVista('crear');
                             }}>+ Nuevo Recibo</button>
                         </div>
+
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            marginBottom: '10px'
+                        }}>
+                            <div style={{
+                                backgroundColor: '#e8f5e9',
+                                color: '#2e7d32',
+                                padding: '6px 16px',
+                                borderRadius: '20px',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                border: '1px solid #c8e6c9',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                                <span>#️⃣</span>
+                                Total de recibos: {recibos.length}
+                            </div>
+                        </div>
+
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
@@ -202,15 +225,15 @@ function Recibos() {
                                     <tr key={r.id}>
                                         <td style={s.td}>#{r.id}</td>
                                         <td style={s.td}>{new Date(r.fecha_recibo).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</td>
-                                       <td style={{ ...s.td, fontWeight: 'bold' }}>
-    {r.bd_clientes?.nombre} {r.bd_clientes?.apellido}
-</td>
-                                        <td style={s.td}>${formatDinero(r.importe)}</td> 
+                                        <td style={{ ...s.td, fontWeight: 'bold' }}>
+                                            {r.bd_clientes?.nombre} {r.bd_clientes?.apellido}
+                                        </td>
+                                        <td style={s.td}>${formatDinero(r.importe)}</td>
                                         <td style={s.td}>
                                             <div style={{ display: 'flex', gap: '12px', fontSize: '1.2rem' }}>
-                                               <span 
-                                                    style={{ cursor: 'pointer' }} 
-                                                    title="Imprimir Recibo" 
+                                                <span
+                                                    style={{ cursor: 'pointer' }}
+                                                    title="Imprimir Recibo"
                                                     onClick={() => imprimirRecibo(r)}
                                                 >
                                                     🖨️
@@ -308,13 +331,13 @@ function Recibos() {
                                         * Ingresar sin puntos (Ej: 15000.50)
                                     </span>
                                 </div>
-                                <input 
-                                    type="number" 
+                                <input
+                                    type="number"
                                     step="any" /* Permite cargar decimales correctamente */
-                                    style={s.input} 
-                                    value={formData.importe ?? ''} 
-                                    onChange={e => setFormData({ ...formData, importe: e.target.value })} 
-                                    placeholder="0.00" 
+                                    style={s.input}
+                                    value={formData.importe ?? ''}
+                                    onChange={e => setFormData({ ...formData, importe: e.target.value })}
+                                    placeholder="0.00"
                                 />
                             </div>
 

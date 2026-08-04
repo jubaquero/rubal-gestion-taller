@@ -99,7 +99,7 @@ function Productos() {
     const { data } = await supabase
       .from('bd_tipos_producto')
       .select('*')
-      .order('nombre', { ascending: true }); 
+      .order('nombre', { ascending: true });
     setTipos(data || []);
   };
 
@@ -107,7 +107,7 @@ function Productos() {
     const { data } = await supabase
       .from('bd_marcas')
       .select('*')
-      .order('nombre', { ascending: true }); 
+      .order('nombre', { ascending: true });
     setMarcas(data || []);
   };
 
@@ -261,12 +261,33 @@ function Productos() {
             </div>
           )}
 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginBottom: '10px'
+          }}>
+            <div style={{
+              backgroundColor: '#e8f5e9',
+              color: '#2e7d32',
+              padding: '6px 16px',
+              borderRadius: '20px',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              border: '1px solid #c8e6c9',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span>#️⃣</span>
+              Total de productos: {productos.length}
+            </div>
+          </div>
 
-<table style={s.tabla}>
+          <table style={s.tabla}>
             <thead>
               <tr>
                 <th style={{ ...s.th, width: '9%' }}>Código</th>
-                <th style={{ ...s.th, width: '23%' }}>Modelo / Categoría</th> 
+                <th style={{ ...s.th, width: '23%' }}>Modelo / Categoría</th>
                 <th style={{ ...s.th, width: '11%' }}>Marca</th>
                 <th style={{ ...s.th, width: '19%' }}>Cód. Fab</th>
                 <th style={{ ...s.th, width: '20%' }}>Medida</th>
@@ -281,7 +302,7 @@ function Productos() {
                 productos.map(p => (
                   <tr key={p.id} style={s.tr} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fdf2f2'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                     <td style={s.td} title={p.codigo}>{p.codigo}</td>
-                    
+
                     {/* Modelo / Categoría */}
                     <td style={s.td}>
                       <div style={{ fontWeight: 'bold', color: '#1e293b' }} title={p.modelo_auto}>
@@ -294,7 +315,7 @@ function Productos() {
 
                     <td style={s.td} title={p.bd_marcas?.nombre}>{p.bd_marcas?.nombre || '-'}</td>
                     <td style={s.td} title={p.codigo_fabricante}>{p.codigo_fabricante || '-'}</td>
-                    
+
                     {/* CELDA DE MEDIDA: con 24% de ancho y salto de línea si es necesario */}
                     <td style={{ ...s.td, whiteSpace: 'normal', wordBreak: 'break-word', fontWeight: 'bold', color: '#0f172a' }} title={p.medida}>
                       {p.medida || '-'}

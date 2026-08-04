@@ -75,6 +75,28 @@ function Proveedores() {
         )}
       </div>
 
+<div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginBottom: '10px'
+          }}>
+            <div style={{
+              backgroundColor: '#e8f5e9',
+              color: '#4574a0',
+              padding: '6px 16px',
+              borderRadius: '20px',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              border: '1px solid #6a9ba1',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span>#️⃣</span>
+              Total de proveedores: {proveedoresFiltrados.length}
+            </div>
+          </div>
+
       <div className="tabla-contenedor">
         {cargando ? <p className="mensaje-carga">Cargando catálogo de proveedores...</p> : (
           <table className="tabla-moderna">
