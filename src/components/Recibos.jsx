@@ -68,6 +68,7 @@ function Recibos() {
         setMostrarSugerencias(false);
     };
 
+    {/*
     const handleGuardar = async () => {
         if (!formData.id_cliente || !formData.importe) return alert("⚠️ Por favor, complete el Importe y seleccione un Presupuesto.");
 
@@ -107,7 +108,98 @@ function Recibos() {
             alert("Hubo un error al guardar: " + error.message);
         }
     };
+*/}
+const handleGuardar = async () => {
+        if (!formData.id_cliente || !formData.importe) return alert("⚠️ Por favor, complete el Importe y seleccione un Presupuesto.");
 
+        // 1. Preparamos el objeto limpio para la base de datos
+        const dataToSave = {
+            id_presupuesto: formData.id_presupuesto || null,
+            id_cliente: formData.id_cliente,
+            fecha_recibo: formData.fecha_recibo,
+            importe: Number(formData.importe),
+            forma_pago: formData.forma_pago,
+            nota: formData.nota || '',
+            descuento: formData.descuento ? Number(formData.descuento) : 0
+        };
+
+        try {
+if (formData.id) {
+                // MODO EDICIÓN: Solo actualizamos el recibo
+                const { error } = await supabase
+                    .from('bd_recibos')
+                    .update(dataToSave)
+                    .eq('id', formData.id);
+
+                if (error) throw error;
+                
+                // 🌟 NUEVO: Validamos si existe en caja para avisarle al usuario
+                const { data: cajaVinculada } = await supabase
+                    .from('bd_caja_ingresos')
+                    .select('id')
+                    .eq('recibo', formData.id)
+                    .limit(1);
+
+                if (cajaVinculada && cajaVinculada.length > 0) {
+                    alert("✅ Recibo actualizado correctamente.\n\n⚠️ ATENCIÓN: Este recibo ya había generado un ingreso en la Caja. Recuerde ir al módulo de Caja para modificar el monto o los detalles manualmente si es necesario.");
+                } else {
+                    alert("✅ Recibo actualizado correctamente.");
+                }
+
+            } else {
+                // MODO CREACIÓN NUEVA
+                // 🌟 Agregamos .select().single() para que Supabase nos devuelva el ID del recibo recién creado
+                const { data: reciboCreado, error } = await supabase
+                    .from('bd_recibos')
+                    .insert([dataToSave])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                
+                // 🌟 AUTOMATIZACIÓN DE CAJA
+                const confirmarCaja = window.confirm("✅ Recibo guardado con éxito.\n\n¿Desea registrar este cobro automáticamente como un ingreso en la Caja?");
+                
+                if (confirmarCaja) {
+                    // Mapeo automático de la forma de pago a la cuenta destino
+                    let cuentaDestinoCaja = "Efectivo";
+                    if (formData.forma_pago === "Transferencia") cuentaDestinoCaja = "Cuenta";
+                    else if (formData.forma_pago === "Cheque") cuentaDestinoCaja = "Cheque";
+                    
+                    // Preparamos los datos para la caja
+                    const cajaInsertData = {
+                        fecha: formData.fecha_recibo,
+                        cliente: getNombreCliente(formData.id_cliente), // Tu función ya busca el Nombre y Apellido
+                        detalle: `Cobro Recibo N° ${reciboCreado.id} / Presupuesto N° ${formData.id_presupuesto || 'S/N'}`, 
+                        categoria: 'Motor', // Fijo como me pediste
+                        importe: Number(formData.importe),
+                        moneda: 'PESO', // Fijo como me pediste
+                        cuenta_destino: cuentaDestinoCaja,
+                        recibo: reciboCreado.id,
+                        presupuesto: formData.id_presupuesto || null,
+                        aclaracion: 'Generado automáticamente a partir de un recibo',
+                        id_cliente: formData.id_cliente // Guardamos el ID por las dudas para uso futuro
+                    };
+
+                    const { error: errorCaja } = await supabase
+                        .from('bd_caja_ingresos')
+                        .insert([cajaInsertData]);
+
+                    if (errorCaja) {
+                        alert("⚠️ El recibo se creó, pero falló la carga automática en caja: " + errorCaja.message);
+                    } else {
+                        alert("✅ Ingreso en caja generado automáticamente con éxito.");
+                    }
+                }
+            }
+
+            setVista('listado');
+            cargarDatos();
+        } catch (error) {
+            console.error("Error de Supabase:", error);
+            alert("Hubo un error al guardar: " + error.message);
+        }
+    };
     const getNombreCliente = (id) => {
         const c = clientes.find(cli => String(cli.id) === String(id));
         return c ? `${c.nombre} ${c.apellido}` : '';
@@ -116,6 +208,33 @@ function Recibos() {
     const getMontoPresupuesto = (id) => {
         const p = presupuestos.find(pres => String(pres.id) === String(id));
         return p ? formatDinero(p.total_presupuesto_con_iva) : '0,00';
+    };
+
+    const eliminarRecibo = async (r) => {
+        // 1. Buscamos si existe un movimiento en caja vinculado a este recibo
+        const { data: cajaVinculada } = await supabase
+            .from('bd_caja_ingresos')
+            .select('id')
+            .eq('recibo', r.id)
+            .limit(1);
+
+        // 2. Armamos el mensaje base
+        let mensaje = `⚠️ ¿Seguro que desea eliminar el Recibo N° ${r.id}? Esta acción no se puede deshacer.`;
+
+        // 3. Si encontramos algo en la caja, le sumamos la advertencia crítica
+        if (cajaVinculada && cajaVinculada.length > 0) {
+            mensaje += `\n\n🚨 IMPORTANTE: Este recibo ya fue ingresado a la Caja. Si lo elimina aquí, deberá ir manualmente al módulo de Caja y eliminar el ingreso de dinero correspondiente.`;
+        }
+
+        // 4. Mostramos la confirmación al usuario
+        if (window.confirm(mensaje)) {
+            const { error } = await supabase.from('bd_recibos').delete().eq('id', r.id);
+            if (error) {
+                alert("Error al eliminar: " + error.message);
+            } else {
+                cargarDatos(); // Recargamos la tabla
+            }
+        }
     };
 
     const imprimirRecibo = (r) => {
@@ -250,11 +369,13 @@ function Recibos() {
                                                     setMostrarSugerencias(false);
                                                     setVista('editar');
                                                 }}>✏️</span>
-                                                <span style={{ cursor: 'pointer', color: '#dc2626' }} title="Eliminar" onClick={() => {
-                                                    if (window.confirm(`⚠️ ¿Seguro que desea eliminar el Recibo N° ${r.id}? Esta acción no se puede deshacer.`)) {
-                                                        supabase.from('bd_recibos').delete().eq('id', r.id).then(cargarDatos);
-                                                    }
-                                                }}>🗑️</span>
+<span 
+    style={{ cursor: 'pointer', color: '#dc2626' }} 
+    title="Eliminar" 
+    onClick={() => eliminarRecibo(r)}
+>
+    🗑️
+</span>
                                             </div>
                                         </td>
                                     </tr>
