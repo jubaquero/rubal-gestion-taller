@@ -159,11 +159,28 @@ function App() {
       <main className="app-main">
 
         {/* NIVEL 0: MENÚ PRINCIPAL */}
+        {/*
         {seccionActiva === null && (
           <div className="menu-grid">
             {menuPrincipal.map((tarjeta) => (
               <div key={tarjeta.id} className="menu-card" onClick={() => irASeccion(tarjeta.id)}>
                 <div className="card-icon">{tarjeta.icon}</div>
+                <h3>{tarjeta.titulo}</h3>
+                <p>{tarjeta.desc}</p>
+              </div>
+            ))}
+          </div>
+        )}
+*/}
+{/* NIVEL 0: MENÚ PRINCIPAL */}
+        {seccionActiva === null && (
+          <div className="menu-grid">
+            {menuPrincipal.map((tarjeta) => (
+              <div key={tarjeta.id} className="menu-card" onClick={() => irASeccion(tarjeta.id)}>
+                {/* 🌟 ACÁ FORZAMOS LA FUENTE EN EL ICONO */}
+                <div className="card-icon" style={{ fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' }}>
+                  {tarjeta.icon}
+                </div>
                 <h3>{tarjeta.titulo}</h3>
                 <p>{tarjeta.desc}</p>
               </div>
