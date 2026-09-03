@@ -160,7 +160,23 @@ function Almacenes() {
                                 <div style={s.formFila}><label style={s.formLabel}>Nombre:</label><input style={s.formInput} value={form.nombre || ''} onChange={e => setForm({ ...form, nombre: e.target.value })} /></div>
                                 <div style={s.formFila}><label style={s.formLabel}>Ubicación:</label><input style={s.formInput} value={form.ubicacion || ''} onChange={e => setForm({ ...form, ubicacion: e.target.value })} /></div>
                                 <div style={s.formFila}><label style={s.formLabel}>¿Hay lugar?:</label><input type="checkbox" checked={!!form.hay_lugar} onChange={e => setForm({ ...form, hay_lugar: e.target.checked })} /></div>
-                                <button style={s.btnPrincipal} onClick={async () => { await supabase.from('bd_almacenes')[form.id ? 'update' : 'insert'](form)[form.id ? 'eq' : '']('id', form.id); setVista('listado'); fetchAlmacenes(); }}>💾 Guardar</button>
+                                <button
+                                    style={s.btnPrincipal}
+                                    onClick={async () => {
+                                        if (form.id) {
+                                            // Si tiene ID, es una edición (UPDATE)
+                                            await supabase.from('bd_almacenes').update(form).eq('id', form.id);
+                                        } else {
+                                            // Si no tiene ID, es uno nuevo (INSERT)
+                                            await supabase.from('bd_almacenes').insert([form]);
+                                        }
+
+                                        setVista('listado');
+                                        fetchAlmacenes();
+                                    }}
+                                >
+                                    💾 Guardar
+                                </button>
                             </>
                         ) : (
                             <>
